@@ -1,15 +1,8 @@
 module JuliaSAILGUI
     using Gtk, CairoMakie, Makie, Observables, PackageCompiler
-    using Dates, DataFrames, Pkg
+    using Dates, DataFrames
 
     export gui_main, makie_draw, gtk_fixed_move, gtk_to_string
-
-    const LocalDir = Pkg.dir("JuliaSAILGUI")
-    const JuliaSysImage = joinpath(LocalDir, "juliagui.dll")
-
-    println("Setting up Julia Sail GUI!!!")
-
-    ENV["JuliaSAILGUI_SYS_IMAGE"] = JuliaSysImage
 
     include("MicroControllerPort.jl")
 
@@ -30,6 +23,5 @@ module JuliaSAILGUI
     
     gtk_to_string(s) = s == C_NULL ? "" : Gtk.bytestring(s)
 
-    println("Creating System Image!")
-    create_sysimage(nothing; sysimage_path=JuliaSysImage)
+    generate_img() = create_sysimage(nothing; sysimage_path=JuliaSysImage)
 end
