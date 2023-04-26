@@ -4,7 +4,10 @@ module JuliaGUI
 
     export gui_main, makie_draw, gtk_fixed_move, gtk_to_string
 
-    const LocalDir = pathof(@__MODULE__);
+    const LocalDir = pathof(@__MODULE__)
+    const JuliaSysImage = joinpath(LocalDir, "juliagui.dll")
+
+    ENV["JuliaSAILGUI_SYS_IMAGE"] = JuliaSysImage
 
     include("MicroControllerPort.jl")
 
@@ -26,5 +29,5 @@ module JuliaGUI
     gtk_to_string(s) = s == C_NULL ? "" : Gtk.bytestring(s)
 
     println("Creating System Image!")
-    create_sysimage(nothing; sysimage_path=joinpath(LocalDir, "juliagui"))
+    create_sysimage(nothing; sysimage_path=JuliaSysImage)
 end
