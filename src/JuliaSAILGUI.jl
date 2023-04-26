@@ -4,6 +4,8 @@ module JuliaGUI
 
     export gui_main, makie_draw, gtk_fixed_move, gtk_to_string
 
+    const LocalDir = pathof(@__MODULE__);
+
     include("MicroControllerPort.jl")
 
     CairoMakie.activate!()
@@ -23,5 +25,6 @@ module JuliaGUI
     
     gtk_to_string(s) = s == C_NULL ? "" : Gtk.bytestring(s)
 
-    create_sysimage(nothing; sysimage_path="juliagui.dll")
+    println("Creating System Image!")
+    create_sysimage(nothing; sysimage_path=joinpath(LocalDir, "juliagui"))
 end
