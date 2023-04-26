@@ -1,5 +1,5 @@
 module JuliaSAILGUI
-    using Gtk, CairoMakie, Makie, Observables, PackageCompiler
+    using Gtk, CairoMakie, Makie, Observables
     using Dates, DataFrames
 
     export gui_main, makie_draw, gtk_fixed_move, gtk_to_string
@@ -22,6 +22,4 @@ module JuliaSAILGUI
     gtk_fixed_move(fixed, widget, x, y) = ccall((:gtk_fixed_move, Gtk.libgtk), Nothing, (Ptr{GObject}, Ptr{GObject}, Cint, Cint), fixed, widget, x, y)
     
     gtk_to_string(s) = s == C_NULL ? "" : Gtk.bytestring(s)
-
-    generate_img() = create_sysimage(nothing; sysimage_path=JuliaSysImage)
 end
