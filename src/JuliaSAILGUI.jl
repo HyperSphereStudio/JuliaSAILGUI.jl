@@ -1,11 +1,13 @@
-module JuliaGUI
+module JuliaSAILGUI
     using Gtk, CairoMakie, Makie, Observables, PackageCompiler
-    using Dates, DataFrames
+    using Dates, DataFrames, Pkg
 
     export gui_main, makie_draw, gtk_fixed_move, gtk_to_string
 
-    const LocalDir = pathof(@__MODULE__)
+    const LocalDir = Pkg.dir("JuliaSAILGUI")
     const JuliaSysImage = joinpath(LocalDir, "juliagui.dll")
+
+    println("Setting up Julia Sail GUI!!!")
 
     ENV["JuliaSAILGUI_SYS_IMAGE"] = JuliaSysImage
 
