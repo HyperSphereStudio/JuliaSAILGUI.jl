@@ -1,5 +1,5 @@
 module JuliaSAILGUI
-    using Gtk, CairoMakie, Makie, Observables, CSV, Dates, DataFrames, LibSerialPort
+    using Gtk, CairoMakie, Observables, CSV, Dates, DataFrames, LibSerialPort
 
     export gui_main, makie_draw, gtk_fixed_move, gtk_to_string
 

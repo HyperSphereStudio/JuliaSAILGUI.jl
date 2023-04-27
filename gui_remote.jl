@@ -12,7 +12,8 @@ if make_sys_image
             JuliaSAILGUI.run_test() 
             return [ccall(:jl_module_usings, Any, (Any,), @__MODULE__)..., @__MODULE__]
         end) 
-   create_sysimage(map(nameof, modules); sysimage_path=dllname)
+   invalid_modules = [Base, Main, Core]     
+   create_sysimage(map(nameof, filter(m -> !(m in invalid_modules), modules)); sysimage_path=dllname)
 end 
     
 open("gui.bat", "w") do f

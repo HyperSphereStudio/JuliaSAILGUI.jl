@@ -1,6 +1,4 @@
-using LibSerialPort
-
-export MicroControllerPort, setport, readlines, check
+export MicroControllerPort, setport, check
 
 pass() = ()
 
@@ -32,7 +30,7 @@ function setport(p::MicroControllerPort, name)
     return true
 end
 
-function readlines(f::Function, p::MicroControllerPort)
+function Base.readlines(f::Function, p::MicroControllerPort)
     msg = p.line_buffer * String(nonblocking_read(p.sp))
     arr = split(msg, r"[\n\r]+")
     if length(arr) > 0
