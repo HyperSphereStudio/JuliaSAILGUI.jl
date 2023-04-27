@@ -1,5 +1,7 @@
 using LibSerialPort
 
+export MicroControllerPort, setport, readlines, check
+
 pass() = ()
 
 mutable struct MicroControllerPort
@@ -12,14 +14,15 @@ mutable struct MicroControllerPort
     MicroControllerPort(name, baud; on_disconnect=pass) = new(name, nothing, baud, "", on_disconnect)
 end
 
-close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.on_disconnect(); println("$p Disconnected!"))
-isopen(p::MicroControllerPort) = p.sp !== nothing && LibSerialPort.isopen(p.sp)
+Base.close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.on_disconnect(); println("$p Disconnected!"))
+Base.isopen(p::MicroControllerPort) = p.sp !== nothing && LibSerialPort.isopen(p.sp)
 function check(p::MicroControllerPort)
     isopen(p) && return true
     p.sp === nothing || close(p)
     return false
 end
-write(p::MicroControllerPort, v::UInt8) = LibSerialPort.write(p.sp, v)
+
+Base.write(p::MicroControllerPort, v::UInt8) = LibSerialPort.write(p.sp, v)
 Base.print(io::IO, p::MicroControllerPort) = print(io, "Port[$(p.name), baud=$(p.baud), open=$(isopen(p))]")
 function setport(p::MicroControllerPort, name)
     close(p)

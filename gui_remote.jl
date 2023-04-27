@@ -16,7 +16,7 @@ if make_sys_image
         lines!(ax, Observable(d.test), Observable(d.test2))
 
         win = GtkWindow()
-        box = GtkBox()
+        box = GtkBox(:v)
         push!(win, box)
         can = GtkCanvas(200, 200)
         push!(box, can)
@@ -25,7 +25,7 @@ if make_sys_image
         @async showall(win)
         @async Gtk.gtk_main()
 
-        makie_draw(plotCanvasObject, fig)
+        makie_draw(can, fig)
     end)
    create_sysimage(nothing; sysimage_path=dllname)
 end 
