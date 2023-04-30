@@ -1,12 +1,15 @@
 module JuliaSAILGUI
-    using Gtk4, GLMakie, Observables, CSV, Dates, DataFrames, LibSerialPort
-
-    export gui_main, makie_draw, gtk_fixed_move, gtk_to_string
+    using GLMakie, Observables, CSV, Dates, DataFrames, LibSerialPort
+    using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
+    using GLMakie.GLAbstraction
+    using GLMakie.Makie
+    using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
+    using GLMakie.Makie: MouseButtonEvent, KeyEvent
+    export gtk_fixed_move, gtk_to_string
 
     include("MicroControllerPort.jl")
     
     gtk_fixed_move(fixed, widget, x, y) = ccall((:gtk_fixed_move, Gtk.libgtk), Nothing, (Ptr{GObject}, Ptr{GObject}, Cint, Cint), fixed, widget, x, y)
-    
     gtk_to_string(s) = s == C_NULL ? "" : Gtk.bytestring(s)
 
     function run_test()
