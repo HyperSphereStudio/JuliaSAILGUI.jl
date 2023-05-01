@@ -25,6 +25,7 @@ module JuliaSAILGUI
             can = GtkCanvas(200, 200)
             push!(box, can)
 
+            display(fig)
             @async showall(win)
             @async Gtk.gtk_main()
         end)
