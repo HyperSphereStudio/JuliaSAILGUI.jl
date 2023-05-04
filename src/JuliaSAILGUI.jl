@@ -1,5 +1,5 @@
 module JuliaSAILGUI
-    using GLMakie, Observables, CSV, Dates, DataFrames, LibSerialPort
+    using GLMakie, Observables, CSV, Dates, DataFrames, LibSerialPort, ModernGL, GeometryBasics, ShaderAbstractions
     using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
     using GLMakie.GLAbstraction
     using GLMakie.Makie
