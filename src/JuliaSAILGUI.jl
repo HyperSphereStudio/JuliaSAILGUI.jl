@@ -1,10 +1,11 @@
 module JuliaSAILGUI
     export gtk_fixed_move, gtk_to_string, GtkGLScreen, GtkGLWindow, display_gui
 
-    using GLMakie, Observables, CSV, Dates, DataFrames, LibSerialPort, ModernGL, GeometryBasics, ShaderAbstractions, Gtk4
-    
+    using Gtk4, GLMakie, ShaderAbstractions, GeometryBasics, ModernGL
     using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
-    using GLMakie: Makie, GLAbstraction, empty_postprocessor, fxaa_postprocessor, to_screen_postprocessor
+    using GLMakie.GLAbstraction
+    using GLMakie.Makie
+    using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
     using GLMakie.Makie: MouseButtonEvent, KeyEvent
 
     include("MicroControllerPort.jl")
@@ -27,6 +28,13 @@ module JuliaSAILGUI
         if !isinteractive()
             @async Gtk4.GLib.glib_main()
             blocking && Gtk4.GLib.waitforsignal(win, :close_request)
+        end
+        win
+    end
+
+    function display_gui(win::GLMakie.Screen; blocking=true)
+        if !isinteractive()
+            blocking && wait(win)
         end
         win
     end
@@ -56,7 +64,7 @@ module JuliaSAILGUI
             function on_resize(a, w, h)
                 m = Gtk4.monitor(a)
                 dpi[] = calc_dpi(m)
-                area[] = GeometryBasics.Rect2i{Int}(0, 0, w, h)
+                area[] = GeometryBasics.Rect2i(0, 0, w, h)
             end, screen.glscreen, :resize)
         Gtk4.queue_render(screen.glscreen)
     end
@@ -204,6 +212,8 @@ module JuliaSAILGUI
     
         return (window, screen)
     end
+
+    using Observables, CSV, Dates, DataFrames, LibSerialPort
 
     function run_test()
         @eval(@__MODULE__, quote 
