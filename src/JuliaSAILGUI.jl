@@ -156,7 +156,7 @@ module JuliaSAILGUI
         gla.focusable = true
     
         postprocessors = [config.ssao ? ssao_postprocessor(fb, shader_cache) : empty_postprocessor(), 
-                          config.oit ? OIT_postprocessor(fb, shader_cache) : empty_postprocessor(),
+                          config.oit ? GLMakie.OIT_postprocessor(fb, shader_cache) : empty_postprocessor(),
                           config.fxaa ? fxaa_postprocessor(fb, shader_cache) : empty_postprocessor(), 
                           to_screen_postprocessor(fb, shader_cache, fb_id)]
     
