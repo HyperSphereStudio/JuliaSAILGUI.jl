@@ -223,6 +223,6 @@ module JuliaSAILGUI
         CSV.write("test.csv", d)
         println("Creating Window")
         window, screen = GtkGLWindow(fig)
-        display_gui(window)
+        display_gui(window; blocking=false)
     end
 end
