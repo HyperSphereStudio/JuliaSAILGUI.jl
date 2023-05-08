@@ -56,7 +56,7 @@ module JuliaSAILGUI
             function on_resize(a, w, h)
                 m = Gtk4.monitor(a)
                 dpi[] = calc_dpi(m)
-                area[] = Recti(0, 0, w, h)
+                area[] = GeometryBasics.Rect2i{Int}(0, 0, w, h)
             end, screen.glscreen, :resize)
         Gtk4.queue_render(screen.glscreen)
     end
