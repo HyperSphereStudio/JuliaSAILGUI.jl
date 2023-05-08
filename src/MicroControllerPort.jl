@@ -2,14 +2,32 @@ export MicroControllerPort, setport, check
 
 pass() = ()
 
+abstract type IOReader end
+
+Base.take!(::IOReader, data, length::Ref{Int}) = data
+
 mutable struct MicroControllerPort
     name
     sp
-    baud
-    line_buffer::String
+    baud::Integer
+    buffer::Array{UInt8}
+    reader
     on_disconnect
 
-    MicroControllerPort(name, baud; on_disconnect=pass) = new(name, nothing, baud, "", on_disconnect)
+    MicroControllerPort(name, baud, reader; on_disconnect=pass) = new(name, nothing, baud, UInt8[], reader, on_disconnect)
+end
+
+struct LineReader end
+function Base.take!(::LineReader, data, length::Ref{Int})
+    found_new_line = false
+    for d in data
+        if d == '\n' || d == '\r'
+            found_new_line = true
+        elseif found_new_line
+            return String(data[1:length[]])
+        end       
+        length[] += 1
+    end
 end
 
 Base.close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.on_disconnect(); println("$p Disconnected!"))
@@ -30,13 +48,20 @@ function setport(p::MicroControllerPort, name)
     return true
 end
 
-function Base.readlines(f::Function, p::MicroControllerPort)
-    msg = p.line_buffer * String(nonblocking_read(p.sp))
-    arr = split(msg, r"[\n\r]+")
-    if length(arr) > 0
-        for i in 1:length(arr)-1
-            arr[i] != "" && f(arr[i])
-        end
-        p.line_buffer = arr[end]
+function read(f::Function, p::MicroControllerPort)
+    append!(p.buffer, nonblocking_read(p.sp))
+    
+    ptr = 1
+    read_length = Ref(0)
+
+    while ptr < length(p.buffer)
+        read_data = take!(p.reader, @view(p.buffer[ptr:end]), read_length)
+        read_length == 0 && continue
+        f(read_data)
+        ptr += read_length[]
+        read_length[] = 0
     end
+
+    deleteat!(p.buffer, 1:ptr)
+    p.buffer.ptr = 1
 end
