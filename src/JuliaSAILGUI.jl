@@ -222,7 +222,7 @@ module JuliaSAILGUI
         lines!(ax, Observable(d.test), Observable(d.test2))
         CSV.write("test.csv", d)
         println("Creating Window")
-        window = GtkGLWindow(fig)
+        window, screen = GtkGLWindow(fig)
         display_gui(window)
     end
 end
