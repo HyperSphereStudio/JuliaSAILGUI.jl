@@ -4,9 +4,7 @@ module JuliaSAILGUI
     using GLMakie, Observables, CSV, Dates, DataFrames, LibSerialPort, ModernGL, GeometryBasics, ShaderAbstractions, Gtk4
     
     using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
-    using GLMakie.GLAbstraction
-    using GLMakie.Makie
-    using GLMakie: empty_postprocessor, fxaa_postprocessor, to_screen_postprocessor
+    using GLMakie: Makie, GLAbstraction, empty_postprocessor, fxaa_postprocessor, to_screen_postprocessor
     using GLMakie.Makie: MouseButtonEvent, KeyEvent
 
     include("MicroControllerPort.jl")
@@ -19,11 +17,11 @@ module JuliaSAILGUI
     GLMakie.framebuffer_size(gla::GtkGLArea) = size(gla) .* GLMakie.retina_scaling_factor(gla)
     GLMakie.resize_native!(gla::GtkGLArea, w, h) = gla
     GLMakie.to_native(gla::GtkGLArea) = gla
-    GLMakie.window_open(scene::Scene, ::GtkGLArea) = scene.events.window_open[] = true
-    GLMakie.hasfocus(scene::Scene, ::GtkGLArea) = scene.events.hasfocus[] = true
-    GLMakie.unicode_input(::Scene, ::GtkGLArea) = ()
-    GLMakie.dropped_files(::Scene, ::GtkGLArea) = ()
-    GLMakie.entered_window(::Scene, ::GtkGLArea) = ()
+    Makie.window_open(scene::Scene, ::GtkGLArea) = scene.events.window_open[] = true
+    Makie.hasfocus(scene::Scene, ::GtkGLArea) = scene.events.hasfocus[] = true
+    Makie.unicode_input(::Scene, ::GtkGLArea) = ()
+    Makie.dropped_files(::Scene, ::GtkGLArea) = ()
+    Makie.entered_window(::Scene, ::GtkGLArea) = ()
 
     function display_gui(win::GtkWidget; blocking=true)
         if !isinteractive()
@@ -51,7 +49,7 @@ module JuliaSAILGUI
         min(wdpi, hdpi)
     end
     
-    function GLMakie.window_area(scene::Scene, screen::GLMakie.Screen{T}) where T <: GtkGLArea
+    function Makie.window_area(scene::Scene, screen::GLMakie.Screen{T}) where T <: GtkGLArea
         area = scene.events.window_area
         dpi = scene.events.window_dpi
         signal_connect(
@@ -63,7 +61,7 @@ module JuliaSAILGUI
         Gtk4.queue_render(screen.glscreen)
     end
     
-    function GLMakie.mouse_buttons(scene::Scene, gla::GtkGLArea)
+    function Makie.mouse_buttons(scene::Scene, gla::GtkGLArea)
         event = scene.events.mousebutton
         g = GtkGestureClick(gla, 0)
     
@@ -83,7 +81,7 @@ module JuliaSAILGUI
         end
     end
     
-    function GLMakie.mouse_position(scene::Scene, screen::GLMakie.Screen{T}) where T <: GtkGLArea
+    function Makie.mouse_position(scene::Scene, screen::GLMakie.Screen{T}) where T <: GtkGLArea
         gla = screen.glscreen
         g = Gtk4.GtkEventControllerMotion(gla)
         mouse_pos = scene.events.mouseposition
@@ -109,13 +107,13 @@ module JuliaSAILGUI
         return Keyboard.unknown
     end
     
-    function GLMakie.scroll(scene::Scene, gla::GtkGLArea)
+    function Makie.scroll(scene::Scene, gla::GtkGLArea)
         scroll = scene.events.scroll
         e = GtkEventControllerScroll(Gtk4.EventControllerScrollFlags_HORIZONTAL | Gtk4.EventControllerScrollFlags_VERTICAL, gla)
         id = signal_connect((c, dx, dy) -> begin scroll[] = (dx, dy); return nothing end, e, "scroll")
     end
     
-    function GLMakie.keyboard_buttons(scene::Scene, gla::GtkGLArea)
+    function Makie.keyboard_buttons(scene::Scene, gla::GtkGLArea)
         keyboardbutton = scene.events.keyboardbutton
         e = GtkEventControllerKey(gla)
     
