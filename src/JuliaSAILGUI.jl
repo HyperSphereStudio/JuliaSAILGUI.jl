@@ -18,12 +18,12 @@ module JuliaSAILGUI
     ShaderAbstractions.native_switch_context!(a::GtkGLArea) = Gtk4.make_current(a)
     GLMakie.framebuffer_size(gla::GtkGLArea) = size(gla) .* GLMakie.retina_scaling_factor(gla)
     GLMakie.resize_native!(gla::GtkGLArea, w, h) = gla
-    Makie.to_native(gla::GtkGLArea) = gla
-    Makie.window_open(scene::Scene, ::GtkGLArea) = scene.events.window_open[] = true
-    Makie.hasfocus(scene::Scene, ::GtkGLArea) = scene.events.hasfocus[] = true
-    Makie.unicode_input(::Scene, ::GtkGLArea) = ()
-    Makie.dropped_files(::Scene, ::GtkGLArea) = ()
-    Makie.entered_window(::Scene, ::GtkGLArea) = ()
+    GLMakie.to_native(gla::GtkGLArea) = gla
+    GLMakie.window_open(scene::Scene, ::GtkGLArea) = scene.events.window_open[] = true
+    GLMakie.hasfocus(scene::Scene, ::GtkGLArea) = scene.events.hasfocus[] = true
+    GLMakie.unicode_input(::Scene, ::GtkGLArea) = ()
+    GLMakie.dropped_files(::Scene, ::GtkGLArea) = ()
+    GLMakie.entered_window(::Scene, ::GtkGLArea) = ()
 
     function display_gui(win::GtkWidget; blocking=true)
         if !isinteractive()
@@ -51,7 +51,7 @@ module JuliaSAILGUI
         min(wdpi, hdpi)
     end
     
-    function Makie.window_area(scene::Scene, screen::GLMakie.Screen{T}) where T <: GtkGLArea
+    function GLMakie.window_area(scene::Scene, screen::GLMakie.Screen{T}) where T <: GtkGLArea
         area = scene.events.window_area
         dpi = scene.events.window_dpi
         signal_connect(
@@ -63,7 +63,7 @@ module JuliaSAILGUI
         Gtk4.queue_render(screen.glscreen)
     end
     
-    function Makie.mouse_buttons(scene::Scene, gla::GtkGLArea)
+    function GLMakie.mouse_buttons(scene::Scene, gla::GtkGLArea)
         event = scene.events.mousebutton
         g = GtkGestureClick(gla, 0)
     
@@ -109,13 +109,13 @@ module JuliaSAILGUI
         return Keyboard.unknown
     end
     
-    function Makie.scroll(scene::Scene, gla::GtkGLArea)
+    function GLMakie.scroll(scene::Scene, gla::GtkGLArea)
         scroll = scene.events.scroll
         e = GtkEventControllerScroll(Gtk4.EventControllerScrollFlags_HORIZONTAL | Gtk4.EventControllerScrollFlags_VERTICAL, gla)
         id = signal_connect((c, dx, dy) -> begin scroll[] = (dx, dy); return nothing end, e, "scroll")
     end
     
-    function Makie.keyboard_buttons(scene::Scene, gla::GtkGLArea)
+    function GLMakie.keyboard_buttons(scene::Scene, gla::GtkGLArea)
         keyboardbutton = scene.events.keyboardbutton
         e = GtkEventControllerKey(gla)
     
