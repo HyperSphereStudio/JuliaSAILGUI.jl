@@ -21,7 +21,7 @@ struct LineReader end
 function Base.take!(::LineReader, data, len::Ref{Int})
     m = match(r"^([^\n\r]+)[\n\r]+", String(data))
     if m !== nothing
-        str = m[1] #Match with the payload
+        str = m[1]              #Match with the payload
         len[] = length(m.match) #Strip the termininating lines
         return str
     end
@@ -52,7 +52,7 @@ function readport(f::Function, p::MicroControllerPort)
     ptr = 1
     read_length = Ref(0)
 
-    while ptr < length(p.buffer)
+    while ptr <= length(p.buffer)
         read_data = take!(p.reader, @view(p.buffer[ptr:end]), read_length)
         read_data === nothing && break
         f(read_data)
