@@ -18,16 +18,14 @@ mutable struct MicroControllerPort
 end
 
 struct LineReader end
-function Base.take!(::LineReader, data, length::Ref{Int})
-    found_new_line = false
-    for d in data
-        if d == '\n' || d == '\r'
-            found_new_line = true
-        elseif found_new_line
-            return String(data[1:length[]])
-        end       
-        length[] += 1
+function Base.take!(::LineReader, data, len::Ref{Int})
+    m = match(r"^([^\n\r]+)[\n\r]+", String(data))
+    if m !== nothing
+        data = m[1]
+        len[] = length(data)
+        return data
     end
+    return nothing
 end
 
 Base.close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.on_disconnect(); println("$p Disconnected!"))
@@ -56,12 +54,11 @@ function readport(f::Function, p::MicroControllerPort)
 
     while ptr < length(p.buffer)
         read_data = take!(p.reader, @view(p.buffer[ptr:end]), read_length)
-        read_length == 0 && continue
+        read_data === nothing && break
         f(read_data)
         ptr += read_length[]
         read_length[] = 0
     end
 
-    deleteat!(p.buffer, 1:ptr)
-    p.buffer.ptr = 1
+    ptr != 1 && deleteat!(p.buffer, 1:(ptr - 1))
 end

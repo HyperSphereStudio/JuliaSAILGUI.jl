@@ -6,11 +6,11 @@ Observables.on(@nospecialize(cb::Function), b::GtkAdjustment) = signal_connect(c
 
 Base.getindex(g::GtkEntry, t::Type = String) = parse(t, g.text)
 Base.getindex(g::GtkEntry, ::Type{String}) = g.text
-Base.getindex(g::Union{GtkAdjustment}) = Gtk4.value(g)
-Base.getindex(g::GtkComboBoxText) = gtk_to_string(Gtk4.active_text(g))
+Base.getindex(g::GtkAdjustment) = Gtk4.value(g)
+Base.getindex(g::GtkComboBoxText) = Gtk4.active_text(g)
 
 Base.setindex!(g::GtkEntry, v) = g.text = string(v)
-Base.setindex!(g::Union{GtkAdjustment}, v) = Gtk4.value(g, v)
+Base.setindex!(g::GtkAdjustment, v) = Gtk4.value(g, v)
 
 function makewidgetwithtitle(widget, label)
     grid = GtkGrid()
@@ -30,4 +30,3 @@ end
 Base.append!(b::GtkBox, items...) = foreach(x->push!(b, x), items)
 
 gtk_fixed_move(fixed, widget, x, y) = ccall((:gtk_fixed_move, Gtk4.libgtk4), Nothing, (Ptr{GObject}, Ptr{GObject}, Cint, Cint), fixed, widget, x, y)
-gtk_to_string(s) = s == C_NULL ? "" : Gtk4.bytestring(s)
