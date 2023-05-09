@@ -1,4 +1,4 @@
-export MicroControllerPort, setport, check
+export MicroControllerPort, setport, check, readport, LineReader
 
 pass() = ()
 
@@ -48,7 +48,7 @@ function setport(p::MicroControllerPort, name)
     return true
 end
 
-function read(f::Function, p::MicroControllerPort)
+function readport(f::Function, p::MicroControllerPort)
     append!(p.buffer, nonblocking_read(p.sp))
     
     ptr = 1

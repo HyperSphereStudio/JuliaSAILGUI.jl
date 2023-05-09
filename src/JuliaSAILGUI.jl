@@ -1,17 +1,13 @@
 module JuliaSAILGUI
-    export gtk_fixed_move, gtk_to_string, GtkGLScreen, GtkGLWindow, display_gui
+    export GtkGLScreen, GtkGLWindow, display_gui
 
     using Gtk4, GLMakie, ShaderAbstractions, GeometryBasics, ModernGL
     using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
     using GLMakie.GLAbstraction
     using GLMakie.Makie
     using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
-    using GLMakie.Makie: MouseButtonEvent, KeyEvent
-
-    include("MicroControllerPort.jl")
+    using GLMakie.Makie: MouseButtonEvent, KeyEvent    
     
-    gtk_fixed_move(fixed, widget, x, y) = ccall((:gtk_fixed_move, Gtk4.libgtk4), Nothing, (Ptr{GObject}, Ptr{GObject}, Cint, Cint), fixed, widget, x, y)
-    gtk_to_string(s) = s == C_NULL ? "" : Gtk4.bytestring(s)
     Base.isopen(::GtkGLArea) = true
     ShaderAbstractions.native_context_alive(a::GtkGLArea) = isopen(a)
     ShaderAbstractions.native_switch_context!(a::GtkGLArea) = Gtk4.make_current(a)
@@ -215,11 +211,15 @@ module JuliaSAILGUI
 
     using Observables, CSV, Dates, DataFrames, LibSerialPort
 
+    include("GtkExtension.jl")
+    include("MicroControllerPort.jl")
+
     function run_test()
         fig = Figure()
         ax = Axis(fig[1, 1])
         d = DataFrame(test=[1, 2, 3], test2=[1, 2, 3])
         lines!(ax, Observable(d.test), Observable(d.test2))
+        scatter!(ax, [2, 3, 4], [3, 4, 5])
         CSV.write("test.csv", d)
         println("Creating Window")
         window, screen = GtkGLWindow(fig)
