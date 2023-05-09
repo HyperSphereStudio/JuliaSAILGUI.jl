@@ -21,9 +21,9 @@ struct LineReader end
 function Base.take!(::LineReader, data, len::Ref{Int})
     m = match(r"^([^\n\r]+)[\n\r]+", String(data))
     if m !== nothing
-        data = m[1]
-        len[] = length(data)
-        return data
+        str = m[1] #Match with the payload
+        len[] = length(m.match) #Strip the termininating lines
+        return str
     end
     return nothing
 end
