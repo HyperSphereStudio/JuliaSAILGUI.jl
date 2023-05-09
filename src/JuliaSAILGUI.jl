@@ -213,16 +213,5 @@ module JuliaSAILGUI
 
     include("GtkExtension.jl")
     include("MicroControllerPort.jl")
-
-    function run_test()
-        fig = Figure()
-        ax = Axis(fig[1, 1])
-        d = DataFrame(test=[1, 2, 3], test2=[1, 2, 3])
-        lines!(ax, Observable(d.test), Observable(d.test2))
-        scatter!(ax, [2, 3, 4], [3, 4, 5])
-        CSV.write("test.csv", d)
-        println("Creating Window")
-        window, screen = GtkGLWindow(fig)
-        display_gui(window; blocking=false)
-    end
+    include("theme_hypersphere.jl")
 end
