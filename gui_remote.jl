@@ -19,20 +19,20 @@ scriptname = ARGS[2]
 
 println("Compile System Image [true/false]?")
 if parse(Bool, readline())
-   println("Warming environment...") 
-   modules = eval(
-        quote 
-            using JuliaSAILGUI 
-            
-            println("Initializing Create Image!")
-            JuliaSAILGUI.run_test() 
-
-            return [ccall(:jl_module_usings, Any, (Any,), JuliaSAILGUI)..., JuliaSAILGUI]
-        end) 
-   invalid_modules = [Base, Main, Core]  
-   compiling_modules = map(nameof, filter(m -> !(m in invalid_modules), modules))
-   println("Compiling Image containing $compiling_modules to $dllname")   
-   create_sysimage(compiling_modules; sysimage_path=dllname)
+    println("Warming environment...")
+    modules = eval(
+         quote 
+             using JuliaSAILGUI 
+             
+             println("Initializing Create Image!")
+             JuliaSAILGUI.run_test() 
+ 
+             return [ccall(:jl_module_usings, Any, (Any,), JuliaSAILGUI)...]
+         end) 
+    invalid_modules = [Base, Main, Core]  
+    compiling_modules = map(nameof, filter(m -> !(m in invalid_modules), modules))
+    println("Compiling Image containing $compiling_modules to $dllname")   
+    create_sysimage(compiling_modules; sysimage_path=dllname)
 end 
     
 println("Creating System Image Executable File \"gui.bat\"")
