@@ -27,7 +27,7 @@ if parse(Bool, readline())
             println("Initializing Create Image!")
             JuliaSAILGUI.run_test() 
 
-            return [ccall(:jl_module_usings, Any, (Any,), @__MODULE__)..., @__MODULE__]
+            return [ccall(:jl_module_usings, Any, (Any,), JuliaSAILGUI)..., JuliaSAILGUI]
         end) 
    invalid_modules = [Base, Main, Core]  
    compiling_modules = map(nameof, filter(m -> !(m in invalid_modules), modules))
