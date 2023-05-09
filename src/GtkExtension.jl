@@ -1,12 +1,16 @@
 export gtk_fixed_move, gtk_to_string, makewidgetwithtitle, buttonwithimage
 
 Observables.on(@nospecialize(cb::Function), b::GtkButton) = signal_connect(cb, b, "clicked")
-Observables.on(@nospecialize(cb::Function), b::GtkComboBoxText) = signal_connect(cb, b, "changed")
+Observables.on(@nospecialize(cb::Function), b::Union{GtkComboBoxText, GtkEntry}) = signal_connect(cb, b, "changed")
 Observables.on(@nospecialize(cb::Function), b::GtkAdjustment) = signal_connect(cb, b, "value-changed")
 
-Base.getindex(g::GtkAdjustment) = Gtk4.value(g)
+Base.getindex(g::GtkEntry, t::Type = String) = parse(t, g.text)
+Base.getindex(g::GtkEntry, ::Type{String}) = g.text
+Base.getindex(g::Union{GtkAdjustment}) = Gtk4.value(g)
 Base.getindex(g::GtkComboBoxText) = gtk_to_string(Gtk4.active_text(g))
-Base.setindex!(g::GtkAdjustment, v) = Gtk4.value(g, v)
+
+Base.setindex!(g::GtkEntry, v) = g.text = string(v)
+Base.setindex!(g::Union{GtkAdjustment}, v) = Gtk4.value(g, v)
 
 function makewidgetwithtitle(widget, label)
     grid = GtkGrid()
