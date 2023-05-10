@@ -23,17 +23,13 @@ if parse(Bool, readline())
     modules = eval(
          quote 
              using JuliaSAILGUI 
-             
              println("Initializing Create Image!")
              JuliaSAILGUI.run_test() 
- 
-             return [ccall(:jl_module_usings, Any, (Any,), JuliaSAILGUI)...]
+             return JuliaSAILGUI.public_packages()
          end) 
-    invalid_modules = [Base, Main, Core]  
-    compiling_modules = map(nameof, filter(m -> !(m in invalid_modules), modules))
-    println("Compiling Image containing $compiling_modules to $dllname")   
-    create_sysimage(compiling_modules; sysimage_path=dllname)
-end 
+    println("Compiling Image containing $modules to $dllname")   
+    create_sysimage(modules; sysimage_path=dllname)
+ end 
     
 println("Creating System Image Executable File \"gui.bat\"")
 open("gui.bat", "w") do f
