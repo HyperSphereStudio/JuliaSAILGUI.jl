@@ -215,7 +215,7 @@ module JuliaSAILGUI
     include("MicroControllerPort.jl")
     include("theme_hypersphere.jl")
 
-    public_packages() = [Observables, CSV, Dates, DataFrames, LibSerialPort, Gtk4, GLMakie, JuliaSAILGUI]
+    public_packages() = [Observables, CSV, DataFrames, LibSerialPort, Gtk4, GLMakie, JuliaSAILGUI]
 
     function run_test()
         fig = Figure()

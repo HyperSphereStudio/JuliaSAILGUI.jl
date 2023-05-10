@@ -12,9 +12,9 @@ mutable struct MicroControllerPort
     baud::Integer
     buffer::Array{UInt8}
     reader
-    on_disconnect
+    on_disconnect 
 
-    MicroControllerPort(name, baud, reader; on_disconnect=pass) = new(name, nothing, baud, UInt8[], reader, on_disconnect)
+    MicroControllerPort(name, baud, reader; on_disconnect = pass) = new(name, nothing, baud, UInt8[], reader, on_disconnect)
 end
 
 struct LineReader end
