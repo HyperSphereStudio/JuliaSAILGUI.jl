@@ -9,6 +9,7 @@ module JuliaSAILGUI
     using GLMakie.Makie: MouseButtonEvent, KeyEvent    
     
     Base.isopen(::GtkGLArea) = true
+    Base.isopen(::Nothing) = false
     ShaderAbstractions.native_context_alive(a::GtkGLArea) = isopen(a)
     ShaderAbstractions.native_switch_context!(a::GtkGLArea) = Gtk4.make_current(a)
     GLMakie.framebuffer_size(gla::GtkGLArea) = size(gla) .* GLMakie.retina_scaling_factor(gla)

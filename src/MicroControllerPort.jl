@@ -1,4 +1,4 @@
-export MicroControllerPort, setport, check, readport, LineReader
+export MicroControllerPort, setport, readport, RegexReader, DelimitedReader
 
 pass() = ()
 
@@ -17,25 +17,24 @@ mutable struct MicroControllerPort
     MicroControllerPort(name, baud, reader; on_disconnect = pass) = new(name, nothing, baud, UInt8[], reader, on_disconnect)
 end
 
-struct LineReader end
-function Base.take!(::LineReader, data, len::Ref{Int})
-    m = match(r"^([^\n\r]+)[\n\r]+", String(data))
+struct RegexReader 
+    rgx::Regex 
+    length_range::AbstractRange
+end
+DelimitedReader(delimeter = "[\n\r]", length_range = 1:1000) = RegexReader(Regex("(.*)(?:$delimeter)"), length_range)
+Base.isopen(::Nothing) = false
+function Base.take!(regex::RegexReader, data, len::Ref{Int})
+    m = match(regex.rgx, String(data))
     if m !== nothing
-        str = m[1]              #Match with the payload
-        len[] = length(m.match) #Strip the termininating lines
-        return str
+        str = m[1]                                      #Match with the payload
+        len[] = length(m.match)                         #Strip the termininating lines
+        return length(str) in regex.length_range ? str : nothing     #Set Range Limit
     end
     return nothing
 end
 
 Base.close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.on_disconnect(); println("$p Disconnected!"))
 Base.isopen(p::MicroControllerPort) = p.sp !== nothing && LibSerialPort.isopen(p.sp)
-function check(p::MicroControllerPort)
-    isopen(p) && return true
-    p.sp === nothing || close(p)
-    return false
-end
-
 Base.write(p::MicroControllerPort, v::UInt8) = LibSerialPort.write(p.sp, v)
 Base.print(io::IO, p::MicroControllerPort) = print(io, "Port[$(p.name), baud=$(p.baud), open=$(isopen(p))]")
 function setport(p::MicroControllerPort, name)
@@ -47,16 +46,20 @@ function setport(p::MicroControllerPort, name)
 end
 
 function readport(f::Function, p::MicroControllerPort)
-    append!(p.buffer, nonblocking_read(p.sp))
+    if !isopen(p)
+        p.sp === nothing || close(p.sp)
+        return
+    end
     
+    append!(p.buffer, read(p.sp))
     ptr = 1
     read_length = Ref(0)
 
     while ptr <= length(p.buffer)
         read_data = take!(p.reader, @view(p.buffer[ptr:end]), read_length)
+        ptr += read_length[]
         read_data === nothing && break
         f(read_data)
-        ptr += read_length[]
         read_length[] = 0
     end
 
