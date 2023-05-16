@@ -22,7 +22,6 @@ struct RegexReader
     length_range::AbstractRange
 end
 DelimitedReader(delimeter = "[\n\r]", length_range = 1:1000) = RegexReader(Regex("(.*)(?:$delimeter)"), length_range)
-Base.isopen(::Nothing) = false
 function Base.take!(regex::RegexReader, data, len::Ref{Int})
     m = match(regex.rgx, String(data))
     if m !== nothing
