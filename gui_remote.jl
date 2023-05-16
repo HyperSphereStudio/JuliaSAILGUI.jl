@@ -10,6 +10,7 @@ macro install(x)
 end
 
 @install(PackageCompiler)
+@install(Reexport)
 
 println("Pulling from git...")
 Pkg.add(url="https://github.com/HyperSphereStudio/JuliaSAILGUI.jl")
@@ -19,17 +20,13 @@ scriptname = ARGS[2]
 
 println("Compile System Image [true/false]?")
 if parse(Bool, readline())
-    println("Warming environment...")
-    modules = eval(
-         quote 
-             using JuliaSAILGUI 
-             println("Initializing Create Image!")
-             JuliaSAILGUI.run_test() 
-             return JuliaSAILGUI.public_packages()
-         end) 
-    println("Compiling Image containing $modules to $dllname")   
-    create_sysimage(modules; sysimage_path=dllname)
- end 
+   eval(:(using JuliaSAILGUI)) 
+   println("Warming environment...")
+   println("Initializing Create Image!")
+   JuliaSAILGUI.run_test()   
+   println("Compiling Image to $dllname")     
+   create_sysimage(; sysimage_path=dllname)
+end 
     
 println("Creating System Image Executable File \"gui.bat\"")
 open("gui.bat", "w") do f

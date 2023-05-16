@@ -27,7 +27,6 @@ function buttonwithimage(label, img)
     return GtkButton(box)
 end
 
-Base.append!(b::GtkWidget, items...) = foreach(x->push!(b, x), items)
-
+Base.append!(b::GtkWidget, items::AbstractArray) = foreach(x->push!(b, x), items)
 
 gtk_fixed_move(fixed, widget, x, y) = ccall((:gtk_fixed_move, Gtk4.libgtk4), Nothing, (Ptr{GObject}, Ptr{GObject}, Cint, Cint), fixed, widget, x, y)
