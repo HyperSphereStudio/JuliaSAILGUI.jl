@@ -46,7 +46,7 @@ end
 
 function readport(f::Function, p::MicroControllerPort)
     if !isopen(p)
-        p.sp === nothing || close(p.sp)
+        close(p)
         return
     end
     
