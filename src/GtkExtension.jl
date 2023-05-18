@@ -21,7 +21,6 @@ mutable struct GtkValueEntry{T} <: GtkWidget
         ventry
     end
 
-    Base.getindex(g::GtkValueEntry{T}) where T = g.value
     Base.getindex(g::GtkValueEntry) = g.value
     Base.setindex!(g::GtkValueEntry{T}, v) where T = (g.value = T(v); signal_block(g -> g.text = string(g.value), g, g.handler))
     Observables.on(@nospecialize(cb::Function), b::GtkValueEntry) = b.callback = cb
