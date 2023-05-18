@@ -6,6 +6,7 @@ module JuliaSAILGUI
     @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort
 
     Base.isopen(::Nothing) = false
+    Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
 
     include("MakieExtension.jl")
     include("GtkExtension.jl")
