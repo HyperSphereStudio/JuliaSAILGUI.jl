@@ -49,6 +49,8 @@ function readport(f::Function, p::MicroControllerPort)
         close(p)
         return
     end
+
+    LibSerialPort.bytesavailable(p.sp) > 0 || return
     
     append!(p.buffer, read(p.sp))
     ptr = 1
