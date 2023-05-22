@@ -3,7 +3,7 @@ module JuliaSAILGUI
 
     export GtkGLScreen, GtkGLWindow, display_gui
 
-    @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort
+    @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, OSMMakie, LightOSM
 
     Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
