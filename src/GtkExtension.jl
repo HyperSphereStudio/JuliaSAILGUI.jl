@@ -1,6 +1,5 @@
 export gtk_fixed_move, gtk_to_string, makewidgetwithtitle, buttonwithimage, makewidgetswithtitle, signal_block, GtkValueEntry
 
-
 mutable struct GtkValueEntry{T} <: GtkWidget
     handle::Ptr{Gtk4.GLib.GObject}
     value::T
