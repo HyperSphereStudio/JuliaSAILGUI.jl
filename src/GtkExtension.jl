@@ -55,26 +55,25 @@ Base.append!(cv::GtkColumnView, cvc::GtkColumnViewColumn) = G_.append_column(cv,
 GtkNoSelection(model) = G_.NoSelection_new(model)
 
 mutable struct GtkJuliaStore
-    items::Dict{Ptr{GObject}, Any}
+    data::AbstractArray
+    indexMap::Dict{Ptr{GObject}, Int}
     store::GListStore
     freeNames::Array{Ptr{GObject}}
 
-    GtkJuliaStore() = new(Dict{Ptr{GObject}, Any}(), GLib.GListStore(:GObject), Ptr{GObject}[])
-    GtkJuliaStore(items::AbstractArray) = (g = GtkJuliaStore(); append!(g, items); return g)
+    GtkJuliaStore(items::AbstractArray) = (g = new(items, Dict{Ptr{GObject}, Any}(), GLib.GListStore(:GObject), Ptr{GObject}[]); append!(g, items); return g)  
     GtkJuliaStore(items...) = GtkJuliaStore(collect(items))
 
     Gtk4.GListModel(g::GtkJuliaStore) = Gtk4.GListModel(g.store)
-    Base.getindex(g::GtkJuliaStore, i::Integer) = g.items[unsafegetname(g.store, i)]
-    Base.setindex!(g::GtkJuliaStore, v, i::Integer) = g.items[unsafegetname(g.store, i)] = v
-    Base.keys(lm::GtkJuliaStore) = keys(g.store)
-    Base.eltype(::Type{GtkJuliaStore}) = Any
-    Base.iterate(g::GtkJuliaStore, i=0) = (i == length(g) ? nothing : (getindex(g, i + 1), i + 1))
-    Base.length(g::GtkJuliaStore) = length(g.store)
-    Base.empty!(g::GtkJuliaStore) = (empty!(g.items); empty!(g.store); empty!(freeNames))
+    Base.getindex(g::GtkJuliaStore, i::Integer) = g.data[i]
+    Base.setindex!(g::GtkJuliaStore, v, i::Integer) = g.data[i] = v
+    Base.eltype(g::GtkJuliaStore) = eltype(g.data)
+    Base.iterate(g::GtkJuliaStore, i=0) = iterate(g.data)
+    Base.length(g::GtkJuliaStore) = length(g.data)
+    Base.empty!(g::GtkJuliaStore) = foreach(empty!, [g.indexMap, g.store, g.freeNames, g.data])
     Base.pushfirst!(g::GtkJuliaStore, item) = insert!(g, 1, item)
     Base.append!(g::GtkJuliaStore, items) = foreach(x -> push!(g, x), items)
-    Base.getindex(g::GtkJuliaStore, i::GtkListItem) = g.items[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)]
-    Base.setindex!(g::GtkJuliaStore, v, i::GtkListItem) = g.items[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)] = v
+    Base.getindex(g::GtkJuliaStore, i::GtkListItem) = g[g.indexMap[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)]]
+    Base.setindex!(g::GtkJuliaStore, v, i::GtkListItem) = g[g.indexMap[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)]] = v
     unsafegetname(ls::GListStore, i) = ccall(("g_list_model_get_object", libgio), Ptr{GObject}, (Ptr{GObject}, UInt32), ls, i-1)
 
     function nextname(g::GtkJuliaStore)
@@ -85,21 +84,24 @@ mutable struct GtkJuliaStore
     function Base.push!(g::GtkJuliaStore, item)
         name = nextname(g)
         ccall(("g_list_store_append", libgio), Nothing, (Ptr{GObject}, Ptr{GObject}), g.store, name)
-        g.items[name] = item
+        push!(g.data, item)
+        g.indexMap[name] = length(g.data)
         return nothing
     end
 
     function Base.insert!(g::GtkJuliaStore, i::Integer, item)
         name = nextname(g)
         ccall(("g_list_store_insert", libgio), Nothing, (Ptr{GObject}, UInt32, Ptr{GObject}), g.store, i-1, name)
-        g.items[name] = item
+        g.indexMap[name] = i
+        insert!(g.data, i, item)
         return nothing
     end
 
     function Base.deleteat!(g::GtkJuliaStore, i::Integer)
         name = unsafegetname(g.store, i)
         push!(freeNames, name)
-        delete!(g.items, name)
+        delete!(g.indexMap, name)
+        deleteat!(g.data, i)
         ccall(("g_list_store_remove", libgio), Nothing, (Ptr{GObject}, UInt32), g.store, i-1)
         return nothing
     end   
