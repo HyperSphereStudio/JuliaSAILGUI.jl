@@ -7,18 +7,21 @@ on_update_signal_name(::GtkComboBoxText) = "changed"
 on_update_signal_name(::GtkAdjustment) = "value-changed"
 on_update_signal_name(::GtkEntry) = "activate"
 
-Observables.on(@nospecialize(cb::Function), w::GtkWidget) = signal_connect(cb, w, on_update_signal_name(w))
+Observables.on(@nospecialize(cb::Function), w::GObject) = signal_connect(cb, w, on_update_signal_name(w))
 Observables.connect!(w::GtkWidget, o::AbstractObservable) = on(v -> w[] = v, o)
 
 Base.getindex(g::GtkEntry, ::Type{String}) = g.text
 Base.getindex(g::GtkLabel, ::Type{String}) = g.label
-Base.getindex(g::GtkComboBoxText, ::Type{String}) = Gtk4.active_text(g)
-Base.getindex(g::GtkAdjustment, ::Type{Number}) = Gtk4.value(g)
-
-Base.getindex(g::Union{GtkEntry, GtkLabel, GtkComboBoxText}, t::Type = String) = parse(g, t)
-
+Base.getindex(g::Union{GtkEntry, GtkLabel}, t::Type = String) = parse(g[String], t)
 Base.setindex!(g::GtkLabel, v) = g.label = string(v)
 Base.setindex!(g::GtkEntry, v) = g.text = string(v)
+
+Base.getindex(g::GtkComboBoxText, ::Type{String} = String) = Gtk4.active_text(g)
+Base.getindex(g::GtkComboBoxText, ::Type{Integer}) = g.active
+Base.setindex!(g::GtkComboBoxText, v::Integer) = g.active = v
+Base.setindex!(g::GtkComboxBoxText, v::String) = Gtk4.active_text(g, v)
+
+Base.getindex(g::GtkAdjustment, ::Type{T} = Number) where T <: Number = Gtk4.value(g)
 Base.setindex!(g::GtkAdjustment, v) = Gtk4.value(g, v)
 
 function Gtk4.set_gtk_property!(o::GObject, name::String, value::AbstractObservable) 
@@ -26,7 +29,7 @@ function Gtk4.set_gtk_property!(o::GObject, name::String, value::AbstractObserva
     on(v -> set_gtk_property!(o, name, v), value)
 end
 
-function Observables.ObservablePair(w::GtkWidget, o::AbstractObservable{T}) where T
+function Observables.ObservablePair(w::GObject, o::AbstractObservable{T}) where T
     w[] = o[]
     done = Ref(false)
     on(w) do w
