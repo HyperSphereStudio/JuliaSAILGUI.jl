@@ -1,5 +1,7 @@
 export gtk_fixed_move, makewidgetwithtitle, buttonwithimage, makewidgetswithtitle, signal_block
 
+export GtkJuliaStore, GtkJuliaColumnViewColumn
+
 using Gtk4: GObject, G_, GLib, GLib.GListStore, libgio, libgtk4
 
 on_update_signal_name(::GtkButton) = "clicked"
@@ -19,7 +21,7 @@ Base.setindex!(g::GtkEntry, v) = g.text = string(v)
 Base.getindex(g::GtkComboBoxText, ::Type{String} = String) = Gtk4.active_text(g)
 Base.getindex(g::GtkComboBoxText, ::Type{Integer}) = g.active
 Base.setindex!(g::GtkComboBoxText, v::Integer) = g.active = v
-Base.setindex!(g::GtkComboxBoxText, v::String) = Gtk4.active_text(g, v)
+Base.setindex!(g::GtkComboBoxText, v::String) = Gtk4.active_text(g, v)
 
 Base.getindex(g::GtkAdjustment, ::Type{T} = Number) where T <: Number = Gtk4.value(g)
 Base.setindex!(g::GtkAdjustment, v) = Gtk4.value(g, v)
@@ -58,7 +60,7 @@ mutable struct GtkJuliaStore
     freeNames::Array{Ptr{GObject}}
 
     GtkJuliaStore() = new(Dict{Ptr{GObject}, Any}(), GLib.GListStore(:GObject), Ptr{GObject}[])
-    GtkJuliaStore(items::AbstractArray) = (g = GtkJuliaStore(); append!(g, items))
+    GtkJuliaStore(items::AbstractArray) = (g = GtkJuliaStore(); append!(g, items); return g)
     GtkJuliaStore(items...) = GtkJuliaStore(collect(items))
 
     Gtk4.GListModel(g::GtkJuliaStore) = Gtk4.GListModel(g.store)
