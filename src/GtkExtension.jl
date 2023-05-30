@@ -1,6 +1,6 @@
 export gtk_fixed_move, makewidgetwithtitle, buttonwithimage, makewidgetswithtitle, signal_block
 
-export GtkJuliaStore, GtkJuliaColumnViewColumn
+export GtkJuliaList, GtkJuliaColumnViewColumn
 
 using Gtk4: GObject, G_, GLib, GLib.GListStore, libgio, libgtk4
 
@@ -14,7 +14,7 @@ Observables.connect!(w::GtkWidget, o::AbstractObservable) = on(v -> w[] = v, o)
 
 Base.getindex(g::GtkEntry, ::Type{String}) = g.text
 Base.getindex(g::GtkLabel, ::Type{String}) = g.label
-Base.getindex(g::Union{GtkEntry, GtkLabel}, t::Type = String) = parse(g[String], t)
+Base.getindex(g::Union{GtkEntry, GtkLabel}, t::Type = String) = parse(t, g[String])
 Base.setindex!(g::GtkLabel, v) = g.label = string(v)
 Base.setindex!(g::GtkEntry, v) = g.text = string(v)
 
@@ -54,34 +54,34 @@ Base.append!(cv::GtkColumnView, cvc::GtkColumnViewColumn) = G_.append_column(cv,
 
 GtkNoSelection(model) = G_.NoSelection_new(model)
 
-mutable struct GtkJuliaStore
+mutable struct GtkJuliaList
     data::AbstractArray
     indexMap::Dict{Ptr{GObject}, Int}
     store::GListStore
     freeNames::Array{Ptr{GObject}}
 
-    GtkJuliaStore(items::AbstractArray) = (g = new(items, Dict{Ptr{GObject}, Int}(), GLib.GListStore(:GObject), Ptr{GObject}[]); append!(g, items); return g)  
-    GtkJuliaStore(items...) = GtkJuliaStore(collect(items))
+    GtkJuliaList(items::AbstractArray) = (g = new(items, Dict{Ptr{GObject}, Int}(), GLib.GListStore(:GObject), Ptr{GObject}[]); append!(g, items); return g)  
+    GtkJuliaList(items...) = GtkJuliaList(collect(items))
 
-    Gtk4.GListModel(g::GtkJuliaStore) = Gtk4.GListModel(g.store)
-    Base.getindex(g::GtkJuliaStore, i::Integer) = g.data[i]
-    Base.setindex!(g::GtkJuliaStore, v, i::Integer) = g.data[i] = v
-    Base.eltype(g::GtkJuliaStore) = eltype(g.data)
-    Base.iterate(g::GtkJuliaStore, i=0) = iterate(g.data)
-    Base.length(g::GtkJuliaStore) = length(g.data)
-    Base.empty!(g::GtkJuliaStore) = foreach(empty!, [g.indexMap, g.store, g.freeNames, g.data])
-    Base.pushfirst!(g::GtkJuliaStore, item) = insert!(g, 1, item)
-    Base.append!(g::GtkJuliaStore, items) = foreach(x -> push!(g, x), items)
-    Base.getindex(g::GtkJuliaStore, i::GtkListItem) = g[g.indexMap[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)]]
-    Base.setindex!(g::GtkJuliaStore, v, i::GtkListItem) = g[g.indexMap[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)]] = v
+    Gtk4.GListModel(g::GtkJuliaList) = Gtk4.GListModel(g.store)
+    Base.getindex(g::GtkJuliaList, i::Integer) = g.data[i]
+    Base.setindex!(g::GtkJuliaList, v, i::Integer) = g.data[i] = v
+    Base.eltype(g::GtkJuliaList) = eltype(g.data)
+    Base.iterate(g::GtkJuliaList, i=0) = iterate(g.data)
+    Base.length(g::GtkJuliaList) = length(g.data)
+    Base.empty!(g::GtkJuliaList) = foreach(empty!, [g.indexMap, g.store, g.freeNames, g.data])
+    Base.pushfirst!(g::GtkJuliaList, item) = insert!(g, 1, item)
+    Base.append!(g::GtkJuliaList, items) = foreach(x -> push!(g, x), items)
+    Base.getindex(g::GtkJuliaList, i::GtkListItem) = g[g.indexMap[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)]]
+    Base.setindex!(g::GtkJuliaList, v, i::GtkListItem) = g[g.indexMap[ccall(("gtk_list_item_get_item", libgtk4), Ptr{GObject}, (Ptr{GObject},), i)]] = v
     unsafegetname(ls::GListStore, i) = ccall(("g_list_model_get_object", libgio), Ptr{GObject}, (Ptr{GObject}, UInt32), ls, i-1)
 
-    function nextname(g::GtkJuliaStore)
+    function nextname(g::GtkJuliaList)
         name = length(g.freeNames) == 0 ? Symbol("$(length(g))") : pop!(g.freeNames)
         return ccall(("gtk_string_object_new", libgtk4), Ptr{GObject}, (Cstring,), name)
     end
 
-    function Base.push!(g::GtkJuliaStore, item)
+    function Base.push!(g::GtkJuliaList, item)
         name = nextname(g)
         ccall(("g_list_store_append", libgio), Nothing, (Ptr{GObject}, Ptr{GObject}), g.store, name)
         push!(g.data, item)
@@ -89,7 +89,7 @@ mutable struct GtkJuliaStore
         return nothing
     end
 
-    function Base.insert!(g::GtkJuliaStore, i::Integer, item)
+    function Base.insert!(g::GtkJuliaList, i::Integer, item)
         name = nextname(g)
         ccall(("g_list_store_insert", libgio), Nothing, (Ptr{GObject}, UInt32, Ptr{GObject}), g.store, i-1, name)
         g.indexMap[name] = i
@@ -97,7 +97,7 @@ mutable struct GtkJuliaStore
         return nothing
     end
 
-    function Base.deleteat!(g::GtkJuliaStore, i::Integer)
+    function Base.deleteat!(g::GtkJuliaList, i::Integer)
         name = unsafegetname(g.store, i)
         push!(freeNames, name)
         delete!(g.indexMap, name)
@@ -107,7 +107,7 @@ mutable struct GtkJuliaStore
     end   
 end
 
-function GtkJuliaColumnViewColumn(store::GtkJuliaStore, name::String, @nospecialize(init_child::Function), @nospecialize(update_child::Function))
+function GtkJuliaColumnViewColumn(store::GtkJuliaList, name::String, @nospecialize(init_child::Function), @nospecialize(update_child::Function))
     factory = GtkSignalListItemFactory()
     signal_connect((f, li) -> set_child(li, init_child()), factory, "setup")
     signal_connect((f, li) -> update_child(get_child(li), store[li]), factory, "bind")
