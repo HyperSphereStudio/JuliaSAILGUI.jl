@@ -60,7 +60,7 @@ mutable struct GtkJuliaStore
     store::GListStore
     freeNames::Array{Ptr{GObject}}
 
-    GtkJuliaStore(items::AbstractArray) = (g = new(items, Dict{Ptr{GObject}, Any}(), GLib.GListStore(:GObject), Ptr{GObject}[]); append!(g, items); return g)  
+    GtkJuliaStore(items::AbstractArray) = (g = new(items, Dict{Ptr{GObject}, Int}(), GLib.GListStore(:GObject), Ptr{GObject}[]); append!(g, items); return g)  
     GtkJuliaStore(items...) = GtkJuliaStore(collect(items))
 
     Gtk4.GListModel(g::GtkJuliaStore) = Gtk4.GListModel(g.store)
