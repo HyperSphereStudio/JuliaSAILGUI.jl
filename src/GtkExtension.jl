@@ -1,7 +1,6 @@
 export gtk_fixed_move, makewidgetwithtitle, buttonwithimage, makewidgetswithtitle, signal_block
 
-using Gtk4.GObject, Gtk4.G_, Gtk4.GLib
-using Gtk4.GLib.GListStore, Gtk4.libgio, Gtk4.libgtk4
+using Gtk4: GObject, G_, GLib, GLib.GListStore, libgio, libgtk4
 
 on_update_signal_name(::GtkButton) = "clicked"
 on_update_signal_name(::GtkComboBoxText) = "changed"
