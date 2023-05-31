@@ -74,4 +74,3 @@ port_listener = Timer(0; interval=3) do t
     issetequal(PortsObservable[], nl) && return
     PortsObservable[] = nl
 end
-Base.append!(b::GtkWidget, items) = foreach(x -> push!(b, x), items)
