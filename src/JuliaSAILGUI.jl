@@ -25,6 +25,10 @@ module JuliaSAILGUI
     resume(h::HTimer) = h.t === nothing && (h.t = Timer(h.cb, h.delay; interval=h.interval))
     pause(h::HTimer) = close(h)
 
+    function __init__()
+        init_ports()
+    end
+
     @setup_workload begin
         @compile_workload begin
             using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools

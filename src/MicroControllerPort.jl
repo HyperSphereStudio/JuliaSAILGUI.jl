@@ -69,8 +69,12 @@ end
 
 
 const PortsObservable = Observable(Set{String}())
-port_listener = Timer(0; interval=3) do t
-    nl = Set(get_port_list())
-    issetequal(PortsObservable[], nl) && return
-    PortsObservable[] = nl
+
+function init_ports()
+    global __portlistener__
+    __portlistener__ = Timer(0; interval=2) do t
+        nl = Set(get_port_list())
+        issetequal(PortsObservable[], nl) && return
+        PortsObservable[] = nl
+    end
 end
