@@ -5,6 +5,8 @@ using GLMakie.Makie
 using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
 using GLMakie.Makie: MouseButtonEvent, KeyEvent    
 
+export shouldblock, GtkGLScreen, GtkGLWindow, display_gui
+
 Base.isopen(::GtkGLArea) = true
 ShaderAbstractions.native_context_alive(a::GtkGLArea) = isopen(a)
 ShaderAbstractions.native_switch_context!(a::GtkGLArea) = Gtk4.make_current(a)
@@ -17,17 +19,19 @@ Makie.unicode_input(::Scene, ::GtkGLArea) = ()
 Makie.dropped_files(::Scene, ::GtkGLArea) = ()
 Makie.entered_window(::Scene, ::GtkGLArea) = ()
 
+shouldblock(block) = block && !haskey(ENV, "SYS_COMPILING")
+
 function display_gui(win::GtkWidget; blocking=true)
     if !isinteractive()
         @async Gtk4.GLib.glib_main()
-        blocking && Gtk4.GLib.waitforsignal(win, :close_request)
+        shouldblock(blocking) && Gtk4.GLib.waitforsignal(win, :close_request)
     end
     win
 end
 
 function display_gui(win::GLMakie.Screen; blocking=true)
     if !isinteractive()
-        blocking && wait(win)
+        shouldblock(blocking) && wait(win)
     end
     win
 end

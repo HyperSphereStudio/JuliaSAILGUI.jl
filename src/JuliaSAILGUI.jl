@@ -1,8 +1,6 @@
 module JuliaSAILGUI
     using Reexport
 
-    export GtkGLScreen, GtkGLWindow, display_gui
-
     @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
 
     Base.isopen(::Nothing) = false
@@ -35,6 +33,7 @@ module JuliaSAILGUI
 
             isopen(p) && readport(p) do str end
         end
+        rm("test.csv"; force=false)
     end
 
 end
