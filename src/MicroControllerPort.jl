@@ -1,7 +1,5 @@
 export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable
 
-pass() = ()
-
 abstract type IOReader end
 
 Base.take!(::IOReader, data, length::Ref{Int}) = data
@@ -12,9 +10,10 @@ mutable struct MicroControllerPort
     baud::Integer
     buffer::Array{UInt8}
     reader
-    on_disconnect 
+    connection::Observable{Bool}
 
-    MicroControllerPort(name, baud, reader; on_disconnect = pass) = new(name, nothing, baud, UInt8[], reader, on_disconnect)
+    MicroControllerPort(name, baud, reader) = new(name, nothing, baud, UInt8[], reader, Observable(false))
+    Observables.on(cb::Function, p::MicroControllerPort; update=false) = on(cb, p.connection; update=update)
 end
 
 struct RegexReader 
@@ -32,7 +31,7 @@ function Base.take!(regex::RegexReader, data, len::Ref{Int})
     return nothing
 end
 
-Base.close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.on_disconnect(); println("$p Disconnected!"))
+Base.close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.connection[] = false)
 Base.isopen(p::MicroControllerPort) = p.sp !== nothing && LibSerialPort.isopen(p.sp)
 Base.write(p::MicroControllerPort, v::UInt8) = LibSerialPort.write(p.sp, v)
 Base.print(io::IO, p::MicroControllerPort) = print(io, "Port[$(p.name), baud=$(p.baud), open=$(isopen(p))]")
@@ -40,7 +39,7 @@ function setport(p::MicroControllerPort, name)
     close(p)
     (name == "" || name === nothing) && return false
     p.sp = LibSerialPort.open(name, p.baud)
-    println("$p Connected!")
+    p.connection = true[]
     return true
 end
 
