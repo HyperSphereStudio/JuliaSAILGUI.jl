@@ -3,6 +3,8 @@ module JuliaSAILGUI
 
     @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
 
+    export HTimer
+
     Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
 
@@ -10,6 +12,18 @@ module JuliaSAILGUI
     include("GtkExtension.jl")
     include("MicroControllerPort.jl")
     include("theme_hypersphere.jl")
+
+    mutable struct HTimer
+        t::Union{Nothing, Timer}
+        cb::Function
+        delay::Real
+        interval::Real
+    
+        HTimer(cb::Function, delay, interval = 0; start=true) = (t = new(nothing, cb, delay, interval); start && resume(t); return t)
+        Base.close(h::HTimer) = h.t !== nothing && (close(h.t); h.t = nothing)
+    end
+    resume(h::HTimer) = h.t === nothing && (h.t = Timer(h.cb, h.delay; interval=h.interval))
+    pause(h::HTimer) = close(h)
 
     @setup_workload begin
         @compile_workload begin

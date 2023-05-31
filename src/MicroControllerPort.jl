@@ -1,4 +1,4 @@
-export MicroControllerPort, setport, readport, RegexReader, DelimitedReader
+export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable
 
 pass() = ()
 
@@ -66,3 +66,12 @@ function readport(f::Function, p::MicroControllerPort)
 
     ptr != 1 && deleteat!(p.buffer, 1:(ptr - 1))
 end
+
+
+const PortsObservable = Observable(Set{String}())
+port_listener = Timer(0; interval=3) do t
+    nl = Set(get_port_list())
+    issetequal(PortsObservable[], nl) && return
+    PortsObservable[] = nl
+end
+Base.append!(b::GtkWidget, items) = foreach(x -> push!(b, x), items)
