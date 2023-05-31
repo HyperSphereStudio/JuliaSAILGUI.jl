@@ -7,13 +7,6 @@ function theme_hypersphere()
         linecolor = :gray60,
         fontsize = 20,
 
-        fonts = (
-            regular = "Noto Sans",
-            bold = "Noto Sans Bold",
-            italic = "Noto Sans Italic",
-            bold_italic = "Noto Sans Bold Italic",
-        ),
-
         Axis = (
             backgroundcolor = (:grey, .4),
             xgridcolor = (:white, 0.5),
