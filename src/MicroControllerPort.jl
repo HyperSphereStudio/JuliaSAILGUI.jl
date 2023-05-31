@@ -8,11 +8,16 @@ mutable struct MicroControllerPort
     name
     sp
     baud::Integer
+    mode::SPMode
+    ndatabits::Integer
+    parity::SPParity
+    nstopbits::Integer
     buffer::Array{UInt8}
     reader
     connection::Observable{Bool}
 
-    MicroControllerPort(name, baud, reader) = new(name, nothing, baud, UInt8[], reader, Observable(false))
+    MicroControllerPort(name, baud, reader; mode=SP_MODE_READ_WRITE, ndatabits=8, parity=SP_PARITY_NONE, nstopbits=1) = 
+        new(name, nothing, baud, mode, ndatabits, parity, nstopbits, UInt8[], reader, Observable(false))
     Observables.on(cb::Function, p::MicroControllerPort; update=false) = on(cb, p.connection; update=update)
 end
 
@@ -38,7 +43,7 @@ Base.print(io::IO, p::MicroControllerPort) = print(io, "Port[$(p.name), baud=$(p
 function setport(p::MicroControllerPort, name)
     close(p)
     (name == "" || name === nothing) && return false
-    p.sp = LibSerialPort.open(name, p.baud)
+    p.sp = LibSerialPort.open(name, p.baud; mode=p.mode, ndatabits=p.ndatabits, parity=p.parity, nstopbits=p.nstopbits)
     p.connection = true[]
     return true
 end

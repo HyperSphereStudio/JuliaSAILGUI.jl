@@ -47,7 +47,7 @@ module JuliaSAILGUI
             window, screen = GtkGLWindow(fig)
             display_gui(window; blocking=false)
 
-            p = MicroControllerPort(:Random, 9600, DelimitedReader("\r\n"), on_disconnect = () -> ())
+            p = MicroControllerPort(:Random, 9600, DelimitedReader("\r\n"))
 
             isopen(p) && readport(p) do str end
         end
