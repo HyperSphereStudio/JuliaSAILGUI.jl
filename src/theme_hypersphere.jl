@@ -5,10 +5,19 @@ function theme_hypersphere()
         backgroundcolor = :grey10,
         textcolor = :white,
         linecolor = :gray60,
+        fontsize = 20,
+
+        fonts = (
+            regular = "Noto Sans",
+            bold = "Noto Sans Bold",
+            italic = "Noto Sans Italic",
+            bold_italic = "Noto Sans Bold Italic",
+        ),
+
         Axis = (
-            backgroundcolor = :grey,
-            xgridcolor = (:white, 0.35),
-            ygridcolor = (:white, 0.35),
+            backgroundcolor = (:grey, .4),
+            xgridcolor = (:white, 0.5),
+            ygridcolor = (:white, 0.5),
             leftspinevisible = false,
             rightspinevisible = false,
             bottomspinevisible = false,
@@ -18,12 +27,16 @@ function theme_hypersphere()
             xticksvisible = false,
             yticksvisible = false,
             xlabelpadding = 3,
-            ylabelpadding = 3
+            ylabelpadding = 3,
+            xgridstyle = :dash,
+            ygridstyle = :dash,
         ),
+
         Legend = (
             framevisible = false,
             padding = (0, 0, 0, 0),
         ),
+
         Axis3 = (
             xgridcolor = (:white, 0.35),
             ygridcolor = (:white, 0.35),
@@ -35,6 +48,7 @@ function theme_hypersphere()
             yticksvisible = false,
             zticksvisible = false,
         ),
+
         Colorbar = (
             ticksvisible = false,
             spinewidth = 0,
