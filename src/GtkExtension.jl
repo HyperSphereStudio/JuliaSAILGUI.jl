@@ -1,4 +1,4 @@
-export gtk_fixed_move, makewidgetwithtitle, buttonwithimage, makewidgetswithtitle, signal_block
+export gtk_fixed_move, makewidgetwithtitle, buttonwithimage, makewidgetswithtitle, signal_block, set_gtk_style!
 
 export GtkJuliaList, GtkJuliaColumnViewColumn
 
@@ -83,17 +83,17 @@ mutable struct GtkJuliaList
 
     function Base.push!(g::GtkJuliaList, item)
         name = nextname(g)
-        ccall(("g_list_store_append", libgio), Nothing, (Ptr{GObject}, Ptr{GObject}), g.store, name)
         push!(g.data, item)
         g.indexMap[name] = length(g.data)
+        ccall(("g_list_store_append", libgio), Nothing, (Ptr{GObject}, Ptr{GObject}), g.store, name)
         return nothing
     end
 
     function Base.insert!(g::GtkJuliaList, i::Integer, item)
         name = nextname(g)
-        ccall(("g_list_store_insert", libgio), Nothing, (Ptr{GObject}, UInt32, Ptr{GObject}), g.store, i-1, name)
-        g.indexMap[name] = i
         insert!(g.data, i, item)
+        g.indexMap[name] = i
+        ccall(("g_list_store_insert", libgio), Nothing, (Ptr{GObject}, UInt32, Ptr{GObject}), g.store, i-1, name)
         return nothing
     end
 
@@ -107,11 +107,11 @@ mutable struct GtkJuliaList
     end   
 end
 
-function GtkJuliaColumnViewColumn(store::GtkJuliaList, name::String, @nospecialize(init_child::Function), @nospecialize(update_child::Function))
+function GtkJuliaColumnViewColumn(store::GtkJuliaList, name::String, @nospecialize(init_child::Function), @nospecialize(update_child::Function); kargs...)
     factory = GtkSignalListItemFactory()
     signal_connect((f, li) -> set_child(li, init_child()), factory, "setup")
     signal_connect((f, li) -> update_child(get_child(li), store[li]), factory, "bind")
-    return GtkColumnViewColumn(name, factory)
+    return GtkColumnViewColumn(name, factory; kargs...)
 end
 
 
@@ -142,3 +142,13 @@ Base.append!(b::GtkWidget, items...) = foreach(x -> push!(b, x), items)
 gtk_fixed_move(fixed, widget, x, y) = ccall((:gtk_fixed_move, Gtk4.libgtk4), Nothing, (Ptr{GObject}, Ptr{GObject}, Cint, Cint), fixed, widget, x, y)
 
 signal_block(f, g, handler_id) = (signal_handler_block(g, handler_id); f(g); signal_handler_unblock(g, handler_id))
+
+function gtk_init()
+    ENV["GTK_THEME"] = "Adwaita:dark"
+end
+
+function set_gtk_style!(widget::GtkWidget, str::String)
+    sc = Gtk4.style_context(widget)
+    pr = Gtk4.GtkCssProvider(data = str)
+    push!(sc, Gtk4.GtkStyleProvider(pr))
+end

@@ -27,6 +27,7 @@ module JuliaSAILGUI
 
     function __init__()
         init_ports()
+        gtk_init()
     end
 
     @setup_workload begin
