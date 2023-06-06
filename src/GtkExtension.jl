@@ -6,7 +6,7 @@ using Gtk4: GObject, G_, GLib, GLib.GListStore, libgio, libgtk4
 
 on_update_signal_name(::GtkButton) = "clicked"
 on_update_signal_name(::GtkComboBoxText) = "changed"
-on_update_signal_name(::GtkAdjustment) = "value-changed"
+on_update_signal_name(::Union{GtkScale, GtkAdjustment}) = "value-changed"
 on_update_signal_name(::GtkEntry) = "activate"
 
 Observables.on(@nospecialize(cb::Function), w::GObject) = signal_connect(cb, w, on_update_signal_name(w))
@@ -23,8 +23,8 @@ Base.getindex(g::GtkComboBoxText, ::Type{Integer}) = g.active
 Base.setindex!(g::GtkComboBoxText, v::Integer) = g.active = v
 Base.setindex!(g::GtkComboBoxText, v::String) = Gtk4.active_text(g, v)
 
-Base.getindex(g::GtkAdjustment, ::Type{T} = Number) where T <: Number = Gtk4.value(g)
-Base.setindex!(g::GtkAdjustment, v) = Gtk4.value(g, v)
+Base.getindex(g::Union{GtkScale, GtkAdjustment}, ::Type{T} = Number) where T <: Number = Gtk4.value(g)
+Base.setindex!(g::Union{GtkScale, GtkAdjustment}, v) = Gtk4.value(g, v)
 
 function Gtk4.set_gtk_property!(o::GObject, name::String, value::AbstractObservable) 
     set_gtk_property!(o, name, value[])
@@ -115,9 +115,14 @@ function GtkJuliaColumnViewColumn(store::GtkJuliaList, name::String, @nospeciali
 end
 
 
-
-
-
+function makewidgetwithtitle(widget, label::AbstractObservable)
+    grid = GtkGrid()
+    lbl = GtkLabel(""; hexpand=true)
+    on(l -> Gtk4.markup(lbl, "<b>$l</b>"), label; update=true)
+    grid[1, 1] = lbl
+    grid[1, 2] = widget
+    return grid
+end
 
 function makewidgetwithtitle(widget, label)
     grid = GtkGrid()

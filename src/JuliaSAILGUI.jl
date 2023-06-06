@@ -12,6 +12,7 @@ module JuliaSAILGUI
     include("GtkExtension.jl")
     include("MicroControllerPort.jl")
     include("theme_hypersphere.jl")
+    include("Math.jl")
 
     mutable struct HTimer
         t::Union{Nothing, Timer}

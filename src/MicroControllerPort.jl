@@ -1,4 +1,4 @@
-export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable
+export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable, FixedLengthReader
 
 abstract type IOReader end
 
@@ -81,4 +81,13 @@ function init_ports()
         issetequal(PortsObservable[], nl) && return
         PortsObservable[] = nl
     end
+end
+
+struct FixedLengthReader length::Integer end
+function Base.take!(r::FixedLengthReader, data, len)
+    if length(data) >= r.length
+        len[] = r.length
+        return data[1:r.length]
+    end
+    return nothing
 end

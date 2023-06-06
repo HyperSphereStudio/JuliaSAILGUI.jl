@@ -209,3 +209,9 @@ function GtkGLWindow(scene; resolution = (500, 500), screen_config...)
 
     return (window, screen)
 end
+
+function Base.empty!(ax::Axis3)
+    while !isempty(ax.scene.plots)
+        delete!(ax.scene, ax.scene.plots[end])
+    end
+end
