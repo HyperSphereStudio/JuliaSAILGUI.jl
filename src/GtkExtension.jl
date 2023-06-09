@@ -19,7 +19,7 @@ Base.setindex!(g::GtkLabel, v) = g.label = string(v)
 Base.setindex!(g::GtkEntry, v) = g.text = string(v)
 
 Base.getindex(g::GtkComboBoxText, ::Type{String} = String) = Gtk4.active_text(g)
-Base.getindex(g::GtkComboBoxText, ::Type{Integer}) = g.active
+Base.getindex(g::GtkComboBoxText, ::Type{T}) where T <: Integer = g.active
 Base.setindex!(g::GtkComboBoxText, v::Integer) = g.active = v
 Base.setindex!(g::GtkComboBoxText, v::String) = Gtk4.active_text(g, v)
 

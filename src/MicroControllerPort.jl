@@ -17,9 +17,7 @@ mutable struct MicroControllerPort
     connection::Observable{Bool}
 
     function MicroControllerPort(name, baud, reader; mode=SP_MODE_READ_WRITE, ndatabits=8, parity=SP_PARITY_NONE, nstopbits=1)
-        io = IOBuffer()
-        io.seekable = false
-        return new(name, nothing, baud, mode, ndatabits, parity, nstopbits, io, reader, Observable(false; ignore_equal_values=true))
+        return new(name, nothing, baud, mode, ndatabits, parity, nstopbits, IOBuffer(), reader, Observable(false; ignore_equal_values=true))
     end
         
     Observables.on(cb::Function, p::MicroControllerPort; update=false) = on(cb, p.connection; update=update)
@@ -31,15 +29,14 @@ struct RegexReader <: IOReader
 end
 DelimitedReader(delimeter = "[\n\r]", length_range = 1:1000) = RegexReader(Regex("(.*)(?:$delimeter)"), length_range)
 function Base.take!(regex::RegexReader, io::IOBuffer)
-    mark(io)
-    m = match(regex.rgx, read(io, String))
+    s = read(io, String)
+    m = match(regex.rgx, s)
     if m !== nothing
         str = m[1]                                                   #Match with the payload
-        reset(io)
-        io.ptr += length(m.match)
+        io.ptr = length(m.match) + 1
         return length(str) in regex.length_range ? str : nothing     #Set Range Limit
     end
-    reset(io)
+    io.ptr = 1
     return nothing
 end
 
@@ -60,19 +57,26 @@ function readport(f::Function, p::MicroControllerPort)
         close(p)
         return
     end
-
     LibSerialPort.bytesavailable(p.sp) > 0 || return
-    write(p.buffer, read(p.sp))
-    p.buffer.ptr = 1
+   
+    try
+        p.buffer.ptr = p.buffer.size + 1
+        write(p.buffer, nonblocking_read(p.sp))
+    catch e
+        showerror(e)
+        close(p)
+    end
     
-    while !eof(p.buffer)
+    while p.buffer.size > 0
+        p.buffer.ptr = 1
+        mark(p.buffer)
         read_data = take!(p.reader, p.buffer)
+        bytes_read = p.buffer.ptr - 1
+        bytes_read > 0 && deleteat!(p.buffer.data, 1:bytes_read)
+        p.buffer.size -= bytes_read
         read_data === nothing && break
         f(read_data)
     end
-
-    unmark(p.buffer)
-    p.buffer.ptr != 1 && deleteat!(p.buffer.data, 1:(p.buffer.ptr-1))
 end
 
 
@@ -170,7 +174,6 @@ function Base.take!(r::SimpleConnection, io::IOBuffer)
     if canread(sizeof(MAGIC_NUMBER) + sizeof(SimplePacketHeader)) && (read(io, UInt32) == MAGIC_NUMBER)
         header = read(io, SimplePacketHeader)
         if canread(header.Size + 1)
-            unmark(io)                                            #Everything past this point should be readable or throw it away, so no longer need mark
             io.ptr += header.Size
             if read(io, UInt8) == TAIL_MAGIC_NUMBER               #Peek ahead to make sure tail is okay
                 io.ptr -= header.Size + 1
@@ -189,6 +192,6 @@ function Base.take!(r::SimpleConnection, io::IOBuffer)
         end
     end
 
-    reset(io)
+    io.ptr = io.mark
     return nothing
 end
