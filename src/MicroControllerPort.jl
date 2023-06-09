@@ -115,11 +115,12 @@ mutable struct SimpleConnection <: IOReader
         rxTimer = HTimer(0, heartbeat_interval; start=false) do t
             port.connection[] = false
         end
-        txTimer = HTimer(0, heartbeat_interval ÷ 2; start=false) do t
-            
-        end
 
         r = new(rxTimer, txTimer, port, 0, 0, 0, onPacketCorrupted)
+
+        txTimer = HTimer(0, heartbeat_interval ÷ 2; start=false) do t
+            write(r, HeartBeatType)
+        end
 
         on(c -> begin
                     if c
