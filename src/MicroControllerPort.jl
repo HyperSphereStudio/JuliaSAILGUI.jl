@@ -140,7 +140,7 @@ function Base.write(s::SimpleConnection, type::Integer, x...)
     write(x::T) where T <: Number = write(s.port, hton(x)) 
     write(x) = write(s.port, x) 
     write(MAGIC_NUMBER)
-    write(SimplePacketHeader(UInt8(sum(sizeof, x)), UInt8(type), s.packet_count))
+    write(SimplePacketHeader(UInt8(sum(sizeof, x)), UInt8(type), UInt8(s.packet_count)))
     foreach(write, x)
     write(TAIL_MAGIC_NUMBER)
     s.packet_count += 1
