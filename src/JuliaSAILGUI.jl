@@ -1,7 +1,7 @@
 module JuliaSAILGUI
     using Reexport
 
-    @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, DiscretePIDs
+    @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
 
     export HTimer, resume, pause
 
@@ -29,8 +29,7 @@ module JuliaSAILGUI
 
     function __init__()
         init_ports()
-        gtk_init()
-    end
+        gtk_init
 
     @setup_workload begin
         @compile_workload begin
