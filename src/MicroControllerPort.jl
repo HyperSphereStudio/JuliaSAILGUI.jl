@@ -16,8 +16,12 @@ mutable struct MicroControllerPort
     reader
     connection::Observable{Bool}
 
-    MicroControllerPort(name, baud, reader; mode=SP_MODE_READ_WRITE, ndatabits=8, parity=SP_PARITY_NONE, nstopbits=1) = 
-        new(name, nothing, baud, mode, ndatabits, parity, nstopbits, IOBuffer(seekable=false), reader, Observable(false; ignore_equal_values=true))
+    function MicroControllerPort(name, baud, reader; mode=SP_MODE_READ_WRITE, ndatabits=8, parity=SP_PARITY_NONE, nstopbits=1)
+        io = IOBuffer()
+        io.seekable = false
+        return new(name, nothing, baud, mode, ndatabits, parity, nstopbits, io, reader, Observable(false; ignore_equal_values=true))
+    end
+        
     Observables.on(cb::Function, p::MicroControllerPort; update=false) = on(cb, p.connection; update=update)
 end
 
@@ -59,7 +63,8 @@ function readport(f::Function, p::MicroControllerPort)
 
     LibSerialPort.bytesavailable(p.sp) > 0 || return
     write(p.buffer, read(p.sp))
-
+    p.buffer.ptr = 1
+    
     while !eof(p.buffer)
         read_data = take!(p.reader, p.buffer)
         read_data === nothing && break
@@ -67,7 +72,7 @@ function readport(f::Function, p::MicroControllerPort)
     end
 
     unmark(p.buffer)
-    Base.compact(p.buffer)
+    p.buffer.ptr != 1 && deleteat!(p.buffer.data, 1:(p.buffer.ptr-1))
 end
 
 

@@ -37,7 +37,6 @@ module JuliaSAILGUI
             using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
 
             d = DataFrame(test=[1, 2, 3], test2=[1, 2, 3])
-            CSV.write("test.csv", d)
 
             set_theme!(theme_hypersphere())
             fig = Figure()
@@ -54,7 +53,6 @@ module JuliaSAILGUI
 
             isopen(p) && readport(p) do str end
         end
-        rm("test.csv"; force=false)
     end
 
 end
