@@ -61,7 +61,7 @@ function readport(f::Function, p::MicroControllerPort)
     write(p.buffer, read(p.sp))
 
     while !eof(p.buffer)
-        take!(p.reader, p.buffer)
+        read_data = take!(p.reader, p.buffer)
         read_data === nothing && break
         f(read_data)
     end
