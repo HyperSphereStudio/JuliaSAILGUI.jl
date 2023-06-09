@@ -10,7 +10,7 @@ on_update_signal_name(::Union{GtkScale, GtkAdjustment}) = "value-changed"
 on_update_signal_name(::GtkEntry) = "activate"
 
 Observables.on(@nospecialize(cb::Function), w::GObject) = signal_connect(cb, w, on_update_signal_name(w))
-Observables.connect!(w::GtkWidget, o::AbstractObservable) = on(v -> w[] = v, o)
+Observables.connect!(w::GtkWidget, o::AbstractObservable{T}) where T = on(v -> w[T] = v, o)
 
 Base.getindex(g::GtkEntry, ::Type{String}) = g.text
 Base.getindex(g::GtkLabel, ::Type{String}) = g.label

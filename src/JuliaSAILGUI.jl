@@ -1,9 +1,9 @@
 module JuliaSAILGUI
     using Reexport
 
-    @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
+    @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, DiscretePIDs
 
-    export HTimer
+    export HTimer, resume, pause
 
     Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
@@ -25,6 +25,7 @@ module JuliaSAILGUI
     end
     resume(h::HTimer) = h.t === nothing && (h.t = Timer(h.cb, h.delay; interval=h.interval))
     pause(h::HTimer) = close(h)
+    Base.reset(h::HTimer) = (pause(h); resume(h))
 
     function __init__()
         init_ports()
