@@ -8,12 +8,6 @@ module JuliaSAILGUI
     Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
 
-    include("MakieExtension.jl")
-    include("GtkExtension.jl")
-    include("MicroControllerPort.jl")
-    include("theme_hypersphere.jl")
-    include("Math.jl")
-
     mutable struct HTimer
         t::Union{Nothing, Timer}
         cb::Function
@@ -26,6 +20,12 @@ module JuliaSAILGUI
     resume(h::HTimer) = h.t === nothing && (h.t = Timer(h.cb, h.delay; interval=h.interval))
     pause(h::HTimer) = close(h)
     Base.reset(h::HTimer) = (pause(h); resume(h))
+
+    include("MakieExtension.jl")
+    include("GtkExtension.jl")
+    include("MicroControllerPort.jl")
+    include("theme_hypersphere.jl")
+    include("Math.jl")
 
     function __init__()
         init_ports()
