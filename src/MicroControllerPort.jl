@@ -112,37 +112,13 @@ struct SimplePacketHeader
 end
 
 mutable struct SimpleConnection <: IOReader
-    rxTimer::HTimer
-    txTimer::HTimer
     port::MicroControllerPort
     packet_loss::UInt16
     last_packet_rx_count::UInt8 
     packet_count::UInt8 
     onPacketCorrupted::Function
 
-    function SimpleConnection(port::MicroControllerPort, heartbeat_interval::Integer, onPacketCorrupted = (h) -> ())
-        rxTimer = HTimer(0, heartbeat_interval; start=false) do t
-            port.connection[] = false
-        end
-
-        r = new(rxTimer, txTimer, port, 0, 0, 0, onPacketCorrupted)
-
-        txTimer = HTimer(0, heartbeat_interval ÷ 2; start=false) do t
-            write(r, HeartBeatType)
-        end
-
-        on(c -> begin
-                    if c
-                       resume(r.rxTimer)
-                       resume(r.txTimer)
-                    else
-                       pause(r.rxTimer)
-                       pause(r.txTimer)
-                    end   
-                end, port; update=true)
-        return r
-    end
-    
+    SimpleConnection(port::MicroControllerPort, onPacketCorrupted = (h) -> ()) = new(port, 0, 0, 0, onPacketCorrupted)
 end
 
 function Base.write(s::SimpleConnection, type::Integer, x...)
@@ -163,8 +139,6 @@ function Base.take!(r::SimpleConnection, io::IOBuffer)
     canread(::Type{T}) where T = canread(sizeof(T))
     canread(x) = canread(sizeof(typeof(x)))
 
-    bytesavailable(io) > 0 && reset(r.rxTimer)
-
     while canread(UInt32) && (head = peek(io, UInt32)) != MAGIC_NUMBER
         io.ptr += 1                             
     end
@@ -176,14 +150,15 @@ function Base.take!(r::SimpleConnection, io::IOBuffer)
         if canread(header.Size + 1)
             io.ptr += header.Size
             if read(io, UInt8) == TAIL_MAGIC_NUMBER               #Peek ahead to make sure tail is okay
-                io.ptr -= header.Size + 1
+                base_packet_pos = io.ptr - (header.Size + 1)
                 if header.Num < r.last_packet_rx_count            #Rollover
                     packet_loss += (typemax(UInt8) - r.last_packet_rx_count) + header.Num
                 else
                     packet_loss += header.Num - r.last_packet_rx_count
                 end
                 r.last_packet_rx_count = header.Num
-                header.Type != HeartBeatType && (return (header, io))
+                payload = IOBuffer(io.data[base_packet_pos:(base_packet_pos + header.Size)])
+                return (header, payload)
             else
                 packet_loss += 1
                 r.onPacketCorrupted(header)                      #Dont reset since its corrupted. Throw the memory away
