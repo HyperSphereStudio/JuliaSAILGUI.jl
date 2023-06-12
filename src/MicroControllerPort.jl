@@ -103,7 +103,6 @@ end
 
 const MAGIC_NUMBER::UInt32 = 0xDEADBEEF
 const TAIL_MAGIC_NUMBER::UInt8 = 0xEE
-const HeartBeatType::UInt8 = 255
 
 struct SimplePacketHeader
     Size::UInt8 
@@ -132,6 +131,8 @@ function Base.write(s::SimpleConnection, type::Integer, x...)
 end
 readn(io::IO, ::Type{T}) where T <: Number = ntoh(read(io, t))
 readn(io::IO, ::Type) = read(io, t)
+readn(io::IO, t::Type...) = [readn(io, T) for T in t]
+readn(io::IO, T::Type, count::Integer) = [readn(io, T) for i in 1:count]
 
 function Base.take!(r::SimpleConnection, io::IOBuffer)
     head::UInt32 = 0
