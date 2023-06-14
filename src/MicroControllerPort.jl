@@ -1,4 +1,4 @@
-export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable, FixedLengthReader, readn, peekn
+export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable, FixedLengthReader, readn, peekn, SimpleConnection, send
 
 abstract type IOReader end
 
@@ -115,28 +115,39 @@ struct SimplePacketHeader
     Base.read(io::IO, ::Type{SimplePacketHeader}) = SimplePacketHeader(read(io, UInt8), read(io, UInt8), read(io, UInt8))
 end
 
-mutable struct SimpleConnection <: JuliaSAILGUI.IOReader
+mutable struct SimpleConnection <: IOReader
     port::MicroControllerPort
     packet_loss::UInt16
     last_packet_rx_count::UInt8 
     packet_count::UInt8 
     onPacketCorrupted::Function
+    write_buffer::IOBuffer
 
     function SimpleConnection(port::MicroControllerPort, onPacketCorrupted = (h) -> ())
-        c = new(port, 0, 0, 0, onPacketCorrupted)
+        c = new(port, 0, 0, 0, onPacketCorrupted, IOBuffer())
         port.reader = c
         c
     end
-end
 
-function Base.write(s::SimpleConnection, type::Integer, x...)
-    write(x::T) where T <: Number = write(s.port, hton(x)) 
-    write(x) = write(s.port, x) 
+    Base.close(c::SimpleConnection) = close(c.port)
+    Base.isopen(c::SimpleConnection) = isopen(c.port)
+    Base.print(io::IO, c::SimpleConnection) = print(io, "Connection[Name=$(c.port.name), Loss=$(c.packet_loss), Open=$(isopen(c))]")
+    Observables.on(cb::Function, p::SimpleConnection; update=false) = on(cb, p.port; update=update)
+    Base.setindex!(p::SimpleConnection, port) = setport(p, port)
+end
+setport(s::SimpleConnection, name) = setport(s.port, name)
+
+function send(s::SimpleConnection, type::Integer, x...)
+    s.write_buffer.ptr = 1
+    s.write_buffer.size = 0
+    write(x::T) where T <: Number = write(s.write_buffer, hton(x)) 
+    write(x) = write(s.write_buffer, x) 
     write(MAGIC_NUMBER)
     write(SimplePacketHeader(UInt8(sum(sizeof, x)), UInt8(type), UInt8(s.packet_count)))
     foreach(write, x)
     write(TAIL_MAGIC_NUMBER)
     s.packet_count += 1
+    write(s.port, s.write_buffer)
 end
 
 readn(io::IO, ::Type{T}) where T <: Number = ntoh(read(io, T))
@@ -170,7 +181,7 @@ function Base.take!(r::SimpleConnection, io::IOBuffer)
                     r.packet_loss += header.Num - r.last_packet_rx_count
                 end
                 r.last_packet_rx_count = header.Num
-                payload = IOBuffer(@view(io.data[base_pos:(base_pos + header.Size)]))
+                payload = IOBuffer(@view(io.data[base_pos:(base_pos + header.Size - 1)]))
                 return (header, payload)
             else
                 r.packet_loss += 1
