@@ -43,7 +43,7 @@ end
 
 Base.close(p::MicroControllerPort) = isopen(p) && (LibSerialPort.close(p.sp); p.sp=nothing; p.connection[] = false)
 Base.isopen(p::MicroControllerPort) = p.sp !== nothing && LibSerialPort.isopen(p.sp)
-Base.write(p::MicroControllerPort, v::UInt8) = LibSerialPort.write(p.sp, v)
+Base.write(p::MicroControllerPort, v::UInt8) = write(p.sp, v)
 Base.print(io::IO, p::MicroControllerPort) = print(io, "Port[$(p.name), baud=$(p.baud), open=$(isopen(p))]")
 function setport(p::MicroControllerPort, name)
     close(p)
@@ -136,18 +136,21 @@ mutable struct SimpleConnection <: IOReader
     Base.setindex!(p::SimpleConnection, port) = setport(p, port)
 end
 setport(s::SimpleConnection, name) = setport(s.port, name)
+readport(f::Function, s::SimpleConnection) = readport(f, s.port)
 
-function send(s::SimpleConnection, type::Integer, x...)
+function send(s::SimpleConnection, type::Integer, args...)
     s.write_buffer.ptr = 1
     s.write_buffer.size = 0
-    write(x::T) where T <: Number = write(s.write_buffer, hton(x)) 
-    write(x) = write(s.write_buffer, x) 
-    write(MAGIC_NUMBER)
-    write(SimplePacketHeader(UInt8(sum(sizeof, x)), UInt8(type), UInt8(s.packet_count)))
-    foreach(write, x)
-    write(TAIL_MAGIC_NUMBER)
+    writestd(x::T) where T <: Number = write(s.write_buffer, hton(x)) 
+    writestd(x) = write(s.write_buffer, x) 
+    writestd(MAGIC_NUMBER)
+    writestd(UInt8(sum(sizeof, args)))
+    writestd(UInt8(type))
+    writestd(UInt8(s.packet_count))
+    foreach(writestd, args)
+    writestd(TAIL_MAGIC_NUMBER)
     s.packet_count += 1
-    write(s.port, s.write_buffer)
+    LibSerialPort.sp_nonblocking_write(s.port.sp.ref, pointer(s.write_buffer.data), s.write_buffer.ptr - 1)
 end
 
 readn(io::IO, ::Type{T}) where T <: Number = ntoh(read(io, T))
