@@ -118,13 +118,12 @@ end
 mutable struct SimpleConnection <: IOReader
     port::MicroControllerPort
     packet_loss::UInt16
-    last_packet_rx_count::UInt8 
     packet_count::UInt8 
     onPacketCorrupted::Function
     write_buffer::IOBuffer
 
     function SimpleConnection(port::MicroControllerPort, onPacketCorrupted = (h) -> ())
-        c = new(port, 0, 0, 0, onPacketCorrupted, IOBuffer())
+        c = new(port, 0, 0, onPacketCorrupted, IOBuffer())
         port.reader = c
         c
     end
@@ -135,7 +134,7 @@ mutable struct SimpleConnection <: IOReader
     Observables.on(cb::Function, p::SimpleConnection; update=false) = on(cb, p.port; update=update)
     Base.setindex!(p::SimpleConnection, port) = setport(p, port)
 end
-setport(s::SimpleConnection, name) = setport(s.port, name)
+setport(s::SimpleConnection, name) = (setport(s.port, name); s.packet_loss = 0)
 readport(f::Function, s::SimpleConnection) = readport(f, s.port)
 
 function send(s::SimpleConnection, type::Integer, args...)
@@ -149,7 +148,7 @@ function send(s::SimpleConnection, type::Integer, args...)
     writestd(UInt8(s.packet_count))
     foreach(writestd, args)
     writestd(TAIL_MAGIC_NUMBER)
-    s.packet_count += 1
+    s.packet_count += UInt8(1)
     LibSerialPort.sp_nonblocking_write(s.port.sp.ref, pointer(s.write_buffer.data), s.write_buffer.ptr - 1)
 end
 
@@ -178,12 +177,12 @@ function Base.take!(r::SimpleConnection, io::IOBuffer)
             base_pos = io.ptr
             io.ptr += header.Size
             if read(io, UInt8) == TAIL_MAGIC_NUMBER               #Peek ahead to make sure tail is okay
-                if header.Num < r.last_packet_rx_count            #Rollover
-                    r.packet_loss += (typemax(UInt8) - r.last_packet_rx_count) + header.Num
+                if header.Num < r.packet_count            #Rollover
+                    r.packet_loss += (typemax(UInt8) - r.packet_count) + header.Num
                 else
-                    r.packet_loss += header.Num - r.last_packet_rx_count
+                    r.packet_loss += header.Num - r.packet_count
                 end
-                r.last_packet_rx_count = header.Num
+                r.packet_count = header.Num
                 payload = IOBuffer(@view(io.data[base_pos:(base_pos + header.Size - 1)]))
                 return (header, payload)
             else
