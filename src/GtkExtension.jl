@@ -8,6 +8,7 @@ on_update_signal_name(::GtkButton) = "clicked"
 on_update_signal_name(::GtkComboBoxText) = "changed"
 on_update_signal_name(::Union{GtkScale, GtkAdjustment}) = "value-changed"
 on_update_signal_name(::GtkEntry) = "activate"
+on_update_signal_name(::GtkCheckButton) = "toggled"
 
 Observables.on(@nospecialize(cb::Function), w::GObject) = signal_connect(cb, w, on_update_signal_name(w))
 Observables.connect!(w::GtkWidget, o::AbstractObservable{T}) where T = on(v -> w[T] = v, o)
@@ -25,6 +26,9 @@ Base.setindex!(g::GtkComboBoxText, v::String) = Gtk4.active_text(g, v)
 
 Base.getindex(g::Union{GtkScale, GtkAdjustment}, ::Type{T} = Number) where T <: Number = Gtk4.value(g)
 Base.setindex!(g::Union{GtkScale, GtkAdjustment}, v) = Gtk4.value(g, v)
+
+Base.getindex(g::GtkCheckButton, ::Type{Bool}) = Gtk4.value(g)
+Base.setindex(g::GtkCheckButton, v) = Gtk4.value(g, v)
 
 function Gtk4.set_gtk_property!(o::GObject, name::String, value::AbstractObservable) 
     set_gtk_property!(o, name, value[])

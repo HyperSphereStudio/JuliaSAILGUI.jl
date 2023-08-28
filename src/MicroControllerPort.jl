@@ -159,6 +159,13 @@ readn(io::IO, T::Type) = read(io, T)
 readn(io::IO, Types::Type...) = [readn(io, T) for T in Types]
 readn(io::IO, T::Type, count::Integer) = [readn(io, T) for i in 1:count]
 
+readl(io::IO, ::Type{T}) where T <: Number = ltoh(read(io, T))
+peekl(io::IO, ::Type{T}) where T <: Number = ltoh(peek(io, T))
+peekl(io::IO, T::Type) = peek(io, T)
+readl(io::IO, T::Type) = read(io, T)
+readl(io::IO, Types::Type...) = [readl(io, T) for T in Types]
+readl(io::IO, T::Type, count::Integer) = [readl(io, T) for i in 1:count]
+
 function Base.take!(r::SimpleConnection, io::IOBuffer)
     head::UInt32 = 0
     canread(s::Integer) = bytesavailable(io) >= s
