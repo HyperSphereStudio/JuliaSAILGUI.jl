@@ -22,14 +22,16 @@ Makie.entered_window(::Scene, ::GtkGLArea) = ()
 shouldblock(block) = block && !haskey(ENV, "SYS_COMPILING")
 
 function display_gui(win::GtkWidget; blocking=true)
+    @async Gtk4.GLib.glib_main()
     if !isinteractive()
-        @async Gtk4.GLib.glib_main()
+		signal_connect(_ -> exit(0), win, :close_request)
         shouldblock(blocking) && Gtk4.GLib.waitforsignal(win, :close_request)
     end
-    win
+    
+	win
 end
 
-function display_gui(win::GLMakie.Screen; blocking=true)
+function display_gui(win::GLMakie.Screen; blocking=true, exit=true)
     if !isinteractive()
         shouldblock(blocking) && wait(win)
     end
@@ -179,6 +181,7 @@ function GtkGLScreen(gla::GtkGLArea; reuse=false, screen_config...)
     time_per_frame = 1.0 / screen.config.framerate
 
     @async while isopen(screen) && !screen.stop_renderloop
+		gla.context === nothing && (close(screen); return)						#Check if gla is destroyed
         ShaderAbstractions.switch_context!(gla)
         notify(screen.render_tick)
 

@@ -1,4 +1,5 @@
-export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable, FixedLengthReader, readn, peekn, SimpleConnection, send
+export MicroControllerPort, setport, readport, RegexReader, DelimitedReader, PortsObservable, FixedLengthReader, SimpleConnection, send
+export readn, peekn, readl, peekl
 
 abstract type IOReader end
 

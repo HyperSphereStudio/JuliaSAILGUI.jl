@@ -1,0 +1,9 @@
+Get Julia from Windows Store
+
+Use Juliaup to install julia 1.8 
+Set as default
+
+Remove version 1.9+ if they were added (ernie computers dont like the newer julia versions :/)
+
+Run gui_create
+You can now run gui
