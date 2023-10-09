@@ -27,7 +27,7 @@ function display_gui(win::GtkWidget; blocking=true)
 		signal_connect(_ -> exit(0), win, :close_request)
         shouldblock(blocking) && Gtk4.GLib.waitforsignal(win, :close_request)
     end
-    
+    Gtk4.focus(win)
 	win
 end
 
