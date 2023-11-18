@@ -20,7 +20,6 @@ module JuliaSAILGUI
     resume(h::HTimer) = h.t === nothing && (h.t = Timer(h.cb, h.delay; interval=h.interval))
     pause(h::HTimer) = close(h)
     Base.reset(h::HTimer) = (pause(h); resume(h))
-	dict(; values...) = Dict(values...)
 
     include("MakieExtension.jl")
     include("GtkExtension.jl")

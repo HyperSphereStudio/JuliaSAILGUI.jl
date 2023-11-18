@@ -3,7 +3,8 @@ using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
 using GLMakie.GLAbstraction
 using GLMakie.Makie
 using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
-using GLMakie.Makie: MouseButtonEvent, KeyEvent    
+using GLMakie.Makie: MouseButtonEvent, KeyEvent
+using BasicBSpline, Flux3D    
 
 export shouldblock, GtkGLScreen, GtkGLWindow, display_gui
 

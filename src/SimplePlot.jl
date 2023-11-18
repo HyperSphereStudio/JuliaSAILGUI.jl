@@ -1,4 +1,4 @@
-export SimplePlot, init
+export SimplePlot, init, dict
 
 mutable struct SimplePlot{T}
 	config; plot
