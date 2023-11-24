@@ -4,7 +4,7 @@ using GLMakie.GLAbstraction
 using GLMakie.Makie
 using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
 using GLMakie.Makie: MouseButtonEvent, KeyEvent
-using OpticSim, Optim, ForwardDiff    
+using Optim, ForwardDiff    
 
 export shouldblock, GtkGLScreen, GtkGLWindow, display_gui
 
