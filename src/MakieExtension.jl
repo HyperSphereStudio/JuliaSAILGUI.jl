@@ -2,7 +2,7 @@ using ShaderAbstractions, GeometryBasics, ModernGL
 using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
 using GLMakie.GLAbstraction
 using GLMakie.Makie
-using GLMakie: empty_postprocessor, fxaa_postprocessor, to_screen_postprocessor
+using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
 using GLMakie.Makie: MouseButtonEvent, KeyEvent
 using Optim, ForwardDiff    
 
@@ -161,7 +161,8 @@ function GtkGLScreen(gla::GtkGLArea; reuse=false, screen_config...)
     config.render_on_demand = true
     gla.focusable = true
 
-    postprocessors = [config.ssao ? ssao_postprocessor(fb, shader_cache) : empty_postprocessor()
+    postprocessors = [config.ssao ? ssao_postprocessor(fb, shader_cache) : empty_postprocessor(),
+					  config.oit ? GLMakie.OIT_postprocessor(fb, shader_cache) : empty_postprocessor(),
                       config.fxaa ? fxaa_postprocessor(fb, shader_cache) : empty_postprocessor(), 
                       to_screen_postprocessor(fb, shader_cache, fb_id)]
 
