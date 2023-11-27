@@ -11,8 +11,8 @@ export shouldblock, GtkGLScreen, GtkGLWindow, display_gui
 Base.isopen(::GtkGLArea) = true
 ShaderAbstractions.native_context_alive(a::GtkGLArea) = isopen(a)
 ShaderAbstractions.native_switch_context!(a::GtkGLArea) = Gtk4.make_current(a)
-GLMakie.framebuffer_size(gla::GtkGLArea) = size(gla) .* GLMakie.retina_scaling_factor(gla)
-GLMakie.resize_native!(gla::GtkGLArea, w, h) = gla
+Base.size(gla::GtkGLArea) = size(gla) .* GLMakie.retina_scaling_factor(gla)
+Base.resize!(gla::GtkGLArea, w, h) = gla
 Makie.to_native(gla::GtkGLArea) = gla
 Makie.window_open(scene::Scene, ::GtkGLArea) = scene.events.window_open[] = true
 Makie.hasfocus(scene::Scene, ::GtkGLArea) = scene.events.hasfocus[] = true

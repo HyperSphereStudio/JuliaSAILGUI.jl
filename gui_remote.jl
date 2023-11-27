@@ -12,6 +12,11 @@ end
 @install(PackageCompiler)
 @install(Reexport)
 
+println("New System Environment [true/false]?")
+if parse(Bool, readline())
+	Pkg.activate("--temp")
+end
+
 println("Pulling from git...")
 Pkg.add(url="https://github.com/HyperSphereStudio/JuliaSAILGUI.jl")
 
@@ -27,5 +32,7 @@ end
     
 println("Creating System Image Executable File \"gui.bat\"")
 open("gui.bat", "w") do f
-    write(f, "julia --sysimage $dllname $scriptname")
+	try run(`juliaup remove juliasailgui`) catch _ end
+	success(Cmd(`juliaup link juliasailgui julia -- --sysimage $dllname`, dir=Sys.BINDIR))
+    write(f, "julia +juliasailgui $scriptname")
 end
