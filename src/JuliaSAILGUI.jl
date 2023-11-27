@@ -1,7 +1,9 @@
 module JuliaSAILGUI
     export HTimer, resume, pause
 	
-	using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, Optim, ForwardDiff, GeometryBasics
+	using Reexport
+	@reexport import Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, Optim, ForwardDiff, GeometryBasics
+	using Gtk4, GLMakie, Observables, LibSerialPort, FileIO, PrecompileTools
 
     Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
@@ -57,10 +59,8 @@ module JuliaSAILGUI
             using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
 
 			GLMakie.activate!()
-			test_makie()
 			test_port()
+			test_makie()
         end
     end
 end
-
-using .JuliaSAILGUI
