@@ -1,1 +1,2 @@
-julia gui_remote.jl IMAGE_NAME(juliagui.dll) PROJECT_NAME(name.jl) MAKE_SYS_IMAGE(true/false)	            
+julia gui_remote.jl juliagui.dll gui.jl
+pause
