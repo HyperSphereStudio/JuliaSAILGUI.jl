@@ -9,9 +9,6 @@ macro install(x)
     end
 end
 
-@install(PackageCompiler)
-@install(Reexport)
-
 println("New System Environment [true/false]?")
 if parse(Bool, readline())
 	Pkg.activate("--temp")
@@ -25,6 +22,8 @@ scriptname = ARGS[2]
 
 println("Compile System Image [true/false]?")
 if parse(Bool, readline())
+   @install(PackageCompiler)
+   
    println("Compiling Image to $dllname")   
    ENV["SYS_COMPILING"] = true
    create_sysimage(["JuliaSAILGUI"]; sysimage_path=dllname)
