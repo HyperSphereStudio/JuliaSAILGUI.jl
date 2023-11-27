@@ -1,7 +1,3 @@
-using Reexport
-
-@reexport import Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, Optim, ForwardDiff, GeometryBasics    
-
 module JuliaSAILGUI
     export HTimer, resume, pause
 	
@@ -65,5 +61,6 @@ module JuliaSAILGUI
 			test_port()
         end
     end
-
 end
+
+using .JuliaSAILGUI

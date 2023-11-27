@@ -1,33 +1,34 @@
 using Pkg
 
-macro install(x)
-    try
-        @eval(using $x)
-    catch 
-        Pkg.add(string(x))
-        @eval(using $x)
-    end
+function prompt(label)
+	println(label * " [true/false]?")
+	if parse(Bool, readline())
+		return true
+	end
+	return false
 end
 
-println("New System Environment [true/false]?")
-if parse(Bool, readline())
-	Pkg.activate("--temp")
-end
+update_core = prompt("Update Core")
+compile_img = prompt("Compile System Image")
 
-println("Pulling from git...")
-Pkg.add(url="https://github.com/HyperSphereStudio/JuliaSAILGUI.jl")
+Pkg.activate("juliasailenv"; shared=true)
+update_core && Pkg.add(url="https://github.com/HyperSphereStudio/JuliaSAILGUI.jl")
 
 dllname = joinpath(Sys.BINDIR, ARGS[1])
 scriptname = ARGS[2]
 
-println("Compile System Image [true/false]?")
-if parse(Bool, readline())
-   @install(PackageCompiler)
+if compile_img
+   try
+        @eval(using PackageCompiler)
+   catch 
+        Pkg.add("PackageCompiler")
+        @eval(using PackageCompiler)
+   end
    
    println("Compiling Image to $dllname")   
    ENV["SYS_COMPILING"] = true
-   create_sysimage(["JuliaSAILGUI"]; sysimage_path=dllname)
-end 
+   PackageCompiler.create_sysimage(["JuliaSAILGUI"]; sysimage_path=dllname)
+end
     
 println("Creating System Image Executable File \"gui.bat\"")
 open("gui.bat", "w") do f
