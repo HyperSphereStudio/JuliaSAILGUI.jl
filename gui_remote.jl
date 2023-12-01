@@ -17,6 +17,8 @@ update_core && Pkg.add(url="https://github.com/HyperSphereStudio/JuliaSAILGUI.jl
 dllname = joinpath(Sys.BINDIR, ARGS[1])
 scriptname = ARGS[2]
 
+println("To use in vscode add addt. arg: --sysimage=$(abspath(dllname))")
+
 if compile_img
    try
         @eval(using PackageCompiler)

@@ -107,24 +107,12 @@ end
 const MAGIC_NUMBER::UInt32 = 0xDEADBEEF
 const TAIL_MAGIC_NUMBER::UInt8 = 0xEE
 
-struct SimplePacketHeader
-    Size::UInt8 
-    Type::UInt8 
-    Num::UInt8 
-
-    SimplePacketHeader(s, t, n) = new(s, t, n)
-    Base.read(io::IO, ::Type{SimplePacketHeader}) = SimplePacketHeader(read(io, UInt8), read(io, UInt8), read(io, UInt8))
-end
-
 mutable struct SimpleConnection <: IOReader
     port::MicroControllerPort
-    packet_loss::UInt16
-    packet_count::UInt8 
-    onPacketCorrupted::Function
     write_buffer::IOBuffer
 
-    function SimpleConnection(port::MicroControllerPort, onPacketCorrupted = (h) -> ())
-        c = new(port, 0, 0, onPacketCorrupted, IOBuffer())
+    function SimpleConnection(port::MicroControllerPort)
+        c = new(port, IOBuffer())
         port.reader = c
         c
     end
@@ -145,8 +133,6 @@ function send(s::SimpleConnection, type::Integer, args...)
     writestd(x) = write(s.write_buffer, x) 
     writestd(MAGIC_NUMBER)
     writestd(UInt8(sum(sizeof, args)))
-    writestd(UInt8(type))
-    writestd(UInt8(s.packet_count))
     foreach(writestd, args)
     writestd(TAIL_MAGIC_NUMBER)
     s.packet_count += UInt8(1)
@@ -179,23 +165,14 @@ function Base.take!(r::SimpleConnection, io::IOBuffer)
 
     mark(io)                                                      #Mark after discardable data
     
-    if canread(sizeof(MAGIC_NUMBER) + sizeof(SimplePacketHeader)) && (readn(io, UInt32) == MAGIC_NUMBER)
-        header = read(io, SimplePacketHeader)
-        if canread(header.Size + 1)
+    if canread(sizeof(MAGIC_NUMBER) + 1) && (readn(io, UInt32) == MAGIC_NUMBER)
+        size = read(io, UInt8)
+        if canread(size + 1)
             base_pos = io.ptr
-            io.ptr += header.Size
+            io.ptr += size
             if read(io, UInt8) == TAIL_MAGIC_NUMBER               #Peek ahead to make sure tail is okay
-                if header.Num < r.packet_count            #Rollover
-                    r.packet_loss += (typemax(UInt8) - r.packet_count) + header.Num
-                else
-                    r.packet_loss += header.Num - r.packet_count
-                end
-                r.packet_count = header.Num
-                payload = IOBuffer(@view(io.data[base_pos:(base_pos + header.Size - 1)]))
-                return (header, payload)
+                return IOBuffer(@view(io.data[base_pos:(base_pos + size - 1)]))
             else
-                r.packet_loss += 1
-                r.onPacketCorrupted(header)                      #Dont reset since its corrupted. Throw the memory away
                 return nothing
             end
         end
