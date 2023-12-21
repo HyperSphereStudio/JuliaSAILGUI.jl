@@ -119,14 +119,14 @@ mutable struct SimpleConnection <: IOReader
 
     Base.close(c::SimpleConnection) = close(c.port)
     Base.isopen(c::SimpleConnection) = isopen(c.port)
-    Base.print(io::IO, c::SimpleConnection) = print(io, "Connection[Name=$(c.port.name), Loss=$(c.packet_loss), Open=$(isopen(c))]")
+    Base.print(io::IO, c::SimpleConnection) = print(io, "Connection[Name=$(c.port.name), Open=$(isopen(c))]")
     Observables.on(cb::Function, p::SimpleConnection; update=false) = on(cb, p.port; update=update)
     Base.setindex!(p::SimpleConnection, port) = setport(p, port)
 end
-setport(s::SimpleConnection, name) = (setport(s.port, name); s.packet_loss = 0)
+setport(s::SimpleConnection, name) = setport(s.port, name)
 readport(f::Function, s::SimpleConnection) = readport(f, s.port)
 
-function send(s::SimpleConnection, type::Integer, args...)
+function send(s::SimpleConnection, args...)
     s.write_buffer.ptr = 1
     s.write_buffer.size = 0
     writestd(x::T) where T <: Number = write(s.write_buffer, hton(x)) 
@@ -135,7 +135,6 @@ function send(s::SimpleConnection, type::Integer, args...)
     writestd(UInt8(sum(sizeof, args)))
     foreach(writestd, args)
     writestd(TAIL_MAGIC_NUMBER)
-    s.packet_count += UInt8(1)
     LibSerialPort.sp_nonblocking_write(s.port.sp.ref, pointer(s.write_buffer.data), s.write_buffer.ptr - 1)
 end
 
