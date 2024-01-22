@@ -1,0 +1,6 @@
+Install Julia via the MS Store (Julia Lang; juliaup)
+
+Install Julia 1.8 via juliaup
+	In Terminal:
+		juliaup add 1.8
+		juliaup default 1.8

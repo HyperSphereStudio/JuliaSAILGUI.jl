@@ -1,9 +1,9 @@
 module JuliaSAILGUI
+    using Reexport
+
+    @reexport using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
+
     export HTimer, resume, pause
-	
-	using Reexport
-	@reexport import Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, Optim, ForwardDiff, GeometryBasics
-	using Gtk4, GLMakie, Observables, LibSerialPort, FileIO, PrecompileTools
 
     Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
@@ -31,36 +31,29 @@ module JuliaSAILGUI
     function __init__()
         init_ports()
         gtk_init()
-		GLMakie.activate!()
     end
-
-	function test_makie()
-		 d = DataFrame(test=[1, 2, 3], test2=[1, 2, 3])
-
-        set_theme!(theme_hypersphere())
-        fig = Figure()
-
-        ax = Axis(fig[1, 1])
-        ax3 = Axis3(fig[1, 2], xlabel="", ylabel="", zlabel="")
-        lines!(ax, Observable(d.test), Observable(d.test2))
-        scatter!(ax, [2, 3, 4], [3, 4, 5])
-        scatter!(ax3, [Point3f(5, 3, 5)])
-        window, screen = GtkGLWindow(fig)
-        display_gui(window; blocking=false)
-	end
-	
-	function test_port()
-		p = MicroControllerPort(:Random, 9600, DelimitedReader("\r\n"))
-		isopen(p) && readport(p) do str end
-	end
 
     @setup_workload begin
         @compile_workload begin
             using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
 
-			GLMakie.activate!()
-			test_port()
-			test_makie()
+            d = DataFrame(test=[1, 2, 3], test2=[1, 2, 3])
+
+            set_theme!(theme_hypersphere())
+            fig = Figure()
+
+            ax = Axis(fig[1, 1])
+            ax3 = Axis3(fig[1, 2], xlabel="", ylabel="", zlabel="")
+            lines!(ax, Observable(d.test), Observable(d.test2))
+            scatter!(ax, [2, 3, 4], [3, 4, 5])
+            scatter!(ax3, [Point3f(5, 3, 5)])
+            window, screen = GtkGLWindow(fig)
+            display_gui(window; blocking=false)
+
+            p = MicroControllerPort(:Random, 9600, DelimitedReader("\r\n"))
+
+            isopen(p) && readport(p) do str end
         end
     end
+
 end
