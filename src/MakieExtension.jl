@@ -1,17 +1,16 @@
-using ShaderAbstractions, GeometryBasics, ModernGL
+using ShaderAbstractions, ModernGL
 using Gtk4.GLib: GObject, signal_handler_is_connected, signal_handler_disconnect
 using GLMakie.GLAbstraction
 using GLMakie.Makie
-using GLMakie: empty_postprocessor, fxaa_postprocessor, OIT_postprocessor, to_screen_postprocessor
-using GLMakie.Makie: MouseButtonEvent, KeyEvent    
+using GLMakie.Makie: MouseButtonEvent, KeyEvent
 
 export shouldblock, GtkGLScreen, GtkGLWindow, display_gui
 
 Base.isopen(::GtkGLArea) = true
 ShaderAbstractions.native_context_alive(a::GtkGLArea) = isopen(a)
 ShaderAbstractions.native_switch_context!(a::GtkGLArea) = Gtk4.make_current(a)
-GLMakie.framebuffer_size(gla::GtkGLArea) = size(gla) .* GLMakie.retina_scaling_factor(gla)
-GLMakie.resize_native!(gla::GtkGLArea, w, h) = gla
+GLMakie.framebuffer_size(gla::GtkGLArea) = size(gla) .* GLMakie.scale_factor(gla)
+GLMakie.resize!(gla::GtkGLArea, w, h) = gla
 Makie.to_native(gla::GtkGLArea) = gla
 Makie.window_open(scene::Scene, ::GtkGLArea) = scene.events.window_open[] = true
 Makie.hasfocus(scene::Scene, ::GtkGLArea) = scene.events.hasfocus[] = true
@@ -44,7 +43,7 @@ function GLMakie.correct_mouse(gla::GtkGLArea, w, h)
     (w * s, fb[2] - (h * s))
 end
 
-function GLMakie.retina_scaling_factor(gla::GtkGLArea)
+function GLMakie.scale_factor(gla::GtkGLArea)
     f = Gtk4.scale_factor(gla)
     (f, f)
 end
@@ -156,14 +155,14 @@ function GtkGLScreen(gla::GtkGLArea; reuse=false, screen_config...)
     shader_cache = GLAbstraction.ShaderCache(gla)
     fb = GLMakie.GLFramebuffer((300, 300))
     fb_id = Ref(0)
-    config = Makie.merge_screen_config(GLMakie.ScreenConfig, screen_config)
+    config = Makie.merge_screen_config(GLMakie.ScreenConfig, Dict{Symbol, Any}(screen_config))
     config.render_on_demand = true
     gla.focusable = true
 
-    postprocessors = [config.ssao ? ssao_postprocessor(fb, shader_cache) : empty_postprocessor(), 
-                      config.oit ? GLMakie.OIT_postprocessor(fb, shader_cache) : empty_postprocessor(),
-                      config.fxaa ? fxaa_postprocessor(fb, shader_cache) : empty_postprocessor(), 
-                      to_screen_postprocessor(fb, shader_cache, fb_id)]
+    postprocessors = [config.ssao ? GLMakie.ssao_postprocessor(fb, shader_cache) : GLMakie.empty_postprocessor(),
+					  config.oit ? GLMakie.OIT_postprocessor(fb, shader_cache) : GLMakie.empty_postprocessor(),
+                      config.fxaa ? GLMakie.fxaa_postprocessor(fb, shader_cache) : GLMakie.empty_postprocessor(), 
+                      GLMakie.to_screen_postprocessor(fb, shader_cache, fb_id)]
 
     screen = GLMakie.Screen(
         gla, shader_cache, fb,
@@ -200,7 +199,7 @@ function GtkGLScreen(gla::GtkGLArea; reuse=false, screen_config...)
 end
 
 function GtkGLWindow(scene; resolution = (500, 500), screen_config...)
-    config = Makie.merge_screen_config(GLMakie.ScreenConfig, screen_config)
+    config = Makie.merge_screen_config(GLMakie.ScreenConfig, Dict{Symbol, Any}(screen_config))
     glArea = GtkGLArea()
     
     window = GtkWindow(config.title, resolution...)
