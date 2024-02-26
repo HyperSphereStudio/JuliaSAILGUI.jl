@@ -1,14 +1,19 @@
 module JuliaSAILGUI
-    export HTimer, resume, pause
-	
 	using Reexport
 	@reexport import Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, Optim, ForwardDiff, GeometryBasics
-	using Gtk4, GLMakie, Observables, LibSerialPort, FileIO, PrecompileTools
+	using Gtk4, GLMakie, Observables, LibSerialPort, FileIO, PrecompileTools, DataFrames
+	export HTimer, resume, pause
 
-    Base.isopen(::Nothing) = false
+    include("GTKMakie/MakieExtension.jl")
+    include("GTKMakie/GtkExtension.jl")
+    include("MicroControllerPort.jl")
+	include("SimplePlot.jl")
+    include("Math.jl")
+	
+	Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
 
-    mutable struct HTimer
+	mutable struct HTimer
         t::Union{Nothing, Timer}
         cb::Function
         delay::Real
@@ -20,13 +25,6 @@ module JuliaSAILGUI
     resume(h::HTimer) = h.t === nothing && (h.t = Timer(h.cb, h.delay; interval=h.interval))
     pause(h::HTimer) = close(h)
     Base.reset(h::HTimer) = (pause(h); resume(h))
-
-    include("MakieExtension.jl")
-    include("GtkExtension.jl")
-    include("MicroControllerPort.jl")
-    include("theme_hypersphere.jl")
-	include("SimplePlot.jl")
-    include("Math.jl")
 
     function __init__()
         init_ports()
@@ -45,8 +43,10 @@ module JuliaSAILGUI
         lines!(ax, Observable(d.test), Observable(d.test2))
         scatter!(ax, [2, 3, 4], [3, 4, 5])
         scatter!(ax3, [Point3f(5, 3, 5)])
-        window, screen = GtkGLWindow(fig)
+        window = GtkGLWindow(fig)
+		
         display_gui(window; blocking=false)
+        @idle_add exit()
 	end
 	
 	function test_port()

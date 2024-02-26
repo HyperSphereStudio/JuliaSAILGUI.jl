@@ -1,7 +1,7 @@
 name = "JuliaSAILGUI"
 uuid = "96abe400-b566-4cb3-9a4a-1e51861d5e98"
 authors = ["Johnathan Bizzano <johnathan.bizzano@gmail.com>"]
-version = "0.4.0"
+version = "0.5.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -22,3 +22,6 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 ShaderAbstractions = "65257c39-d410-5151-9873-9b3e5be5013e"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+
+[compat]
+julia = "≥ 1.10.0"

@@ -1,5 +1,10 @@
 using Pkg
 
 Pkg.activate(".")
-Pkg.resolve()
+
+println("Resolve Packages [y\n]?:")
+
+readline() == "y" && Pkg.resolve()
+
+println("Precompiling...")
 Pkg.precompile()
