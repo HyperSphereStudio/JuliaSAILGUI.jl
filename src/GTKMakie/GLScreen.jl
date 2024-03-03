@@ -13,9 +13,7 @@ glaptr(gla::Ptr) = Ptr{GtkGLArea}(gla)
 getscreenstate(gla) = SCREEN_STATES[glaptr(gla)]
 hasscreenstate(gla) = haskey(SCREEN_STATES, glaptr(gla))
 
-function GtkGLScreen(gla_config...; screen_config...)
-    gla = GtkGLArea(gla_config..., focusable=true)
- 
+function GtkGLScreen(gla; screen_config...)
 	screen_config = Makie.merge_screen_config(GLMakie.ScreenConfig, Dict{Symbol, Any}(screen_config...))
     screen_config.render_on_demand = true
 
@@ -23,8 +21,8 @@ function GtkGLScreen(gla_config...; screen_config...)
     Gtk4.on_realize(on_gla_realize, gla, screen_config)
     Gtk4.on_unrealize(on_gla_unrealize, gla)
 	Gtk4.on_render(on_gla_render, gla)
-    
-    gla
+	
+	gla
 end
 
 Base.display(gla::GtkGLArea, scene; attr...) = @idle_add begin 
@@ -36,7 +34,7 @@ function GtkGLWindow(scene, display_attributes...; resolution = (500, 500), scre
     screen_config = Makie.merge_screen_config(GLMakie.ScreenConfig, Dict{Symbol, Any}(screen_config))
     
     window = GtkWindow(screen_config.title, resolution...)
-    gla = GtkGLScreen(vexpand=true, hexpand=true)
+    gla = GtkGLScreen(GtkGLArea(vexpand=true, hexpand=true))
     window[] = gla
     display(gla, scene; display_attributes...)
 
