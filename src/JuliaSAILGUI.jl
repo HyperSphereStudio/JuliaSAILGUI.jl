@@ -1,52 +1,34 @@
 module JuliaSAILGUI
 	using Reexport
-	@reexport import Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, Optim, ForwardDiff, GeometryBasics
-	using Gtk4, GLMakie, Observables, LibSerialPort, FileIO, PrecompileTools, DataFrames
-	export HTimer, resume, pause
+	@reexport using GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools, Optim, ForwardDiff, GeometryBasics
+	using GLMakie, Observables, LibSerialPort, FileIO, PrecompileTools, DataFrames
 
-    include("GTKMakie/MakieExtension.jl")
-    include("GTKMakie/GtkExtension.jl")
+    include("MouseTrapExt/MousetrapExt.jl")
     include("MicroControllerPort.jl")
 	include("SimplePlot.jl")
     include("Math.jl")
+
+	using Mousetrap
 	
 	Base.isopen(::Nothing) = false
     Base.append!(d::Dict, items::Pair...) = foreach(p -> d[p[1]] = p[2], items)
 
-	mutable struct HTimer
-        t::Union{Nothing, Timer}
-        cb::Function
-        delay::Real
-        interval::Real
-    
-        HTimer(cb::Function, delay, interval = 0; start=true) = (t = new(nothing, cb, delay, interval); start && resume(t); return t)
-        Base.close(h::HTimer) = h.t !== nothing && (close(h.t); h.t = nothing)
-    end
-    resume(h::HTimer) = h.t === nothing && (h.t = Timer(h.cb, h.delay; interval=h.interval))
-    pause(h::HTimer) = close(h)
-    Base.reset(h::HTimer) = (pause(h); resume(h))
-
     function __init__()
         init_ports()
-        gtk_init()
 		GLMakie.activate!()
     end
 
 	function test_makie()
-		 d = DataFrame(test=[1, 2, 3], test2=[1, 2, 3])
+		d = DataFrame(test=[1, 2, 3], test2=[1, 2, 3])
 
         set_theme!(theme_hypersphere())
         fig = Figure()
-
+		
         ax = Axis(fig[1, 1])
         ax3 = Axis3(fig[1, 2], xlabel="", ylabel="", zlabel="")
         lines!(ax, Observable(d.test), Observable(d.test2))
         scatter!(ax, [2, 3, 4], [3, 4, 5])
         scatter!(ax3, [Point3f(5, 3, 5)])
-        window = GtkGLWindow(fig)
-		
-        display_gui(window; blocking=false)
-        @idle_add exit()
 	end
 	
 	function test_port()
@@ -56,7 +38,7 @@ module JuliaSAILGUI
 
     @setup_workload begin
         @compile_workload begin
-            using Gtk4, GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
+            using GLMakie, Observables, CSV, DataFrames, LibSerialPort, HTTP, FileIO, PrecompileTools
 
 			GLMakie.activate!()
 			test_port()
