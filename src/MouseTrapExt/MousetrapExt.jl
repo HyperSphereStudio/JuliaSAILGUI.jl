@@ -22,6 +22,3 @@ function Base.empty!(ax::Axis3)
         delete!(ax.scene, ax.scene.plots[end])
     end
 end
-
-Mousetrap.@export_function ColumnView set_show_row_separators! Cvoid Bool b
-Mousetrap.@export_function ColumnView set_show_column_separators! Cvoid Bool b
