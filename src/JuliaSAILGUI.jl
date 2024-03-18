@@ -19,7 +19,6 @@ module JuliaSAILGUI
 		dict::Dict{Symbol, T}
 
 		Expando{T}(; args...) where T = new{T}(Dict{Symbol, T}(collect(args)))
-		Expando{T}() where T = new{T}(Dict{Symbol, T}())
 		Expando() = Expando{Any}()
 
 		Base.getproperty(x::Expando, s::Symbol) = getfield(x, :dict)[s]
