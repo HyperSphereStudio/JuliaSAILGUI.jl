@@ -38,11 +38,11 @@ Observables.on(f, w::Button) = connect_signal_clicked!(x -> (f(w); return nothin
 
 Base.getindex(w::ToggleButton) = get_is_active(w)
 Base.setindex!(w::ToggleButton, x::Bool) = set_is_active!(w, x)
-Observables.on(f, w::ToggleButton) = connect_signal_toggled!(x -> (f(w); return nothing), w)
+Observables.on(f, w::ToggleButton) = connect_signal_toggled!(x -> (f(w[]); return nothing), w)
 
 Base.getindex(w::Switch) = get_is_active(w)
 Base.setindex!(w::Switch, x::Bool) = set_is_active!(w, x)
-Observables.on(f, w::Switch) = connect_signal_switched!(x -> (f(w); return nothing), w)
+Observables.on(f, w::Switch) = connect_signal_switched!(x -> (f(w[]); return nothing), w)
 
 Base.getindex(w::SpinButton) = get_value(w)
 Base.setindex!(w::SpinButton, x::Number) = set_value!(w, x)
