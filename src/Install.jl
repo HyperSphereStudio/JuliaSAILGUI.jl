@@ -2,9 +2,9 @@ using Pkg
 
 Pkg.activate("JuliaGUIEnv", shared=true)
 
-println("Install Core Libraries? [y/n]")
+println("Install Core Libraries [Y/N]?")
 
-if readline() == "y"
+if read(stdin, Char) == "Y"
 	Pkg.add(PackageSpec(name="GLMakie", version="0.8.11"))
 	try Pkg.rm("mousetrap") catch end
 	try Pkg.rm("mousetrap_windows_jll") catch end
@@ -17,6 +17,7 @@ if readline() == "y"
 	Pkg.add(url="https://github.com/clemapfel/mousetrap_jll")
 	Pkg.add(url="https://github.com/clemapfel/MousetrapMakie.jl")
 
+	Pkg.add("Glib_jll")
 	Pkg.add("Observables")
 	Pkg.add("DataFrames")
 	Pkg.add("LibSerialPort")
@@ -27,6 +28,8 @@ if readline() == "y"
 	Pkg.add("CSV")
 	Pkg.add("Optim")
 	Pkg.add("GeometryBasics")
+	Pkg.add("DifferentialEquations")
+	Pkg.add("Unitful")
 end
 
 Pkg.add(url="https://github.com/HyperSphereStudio/JuliaSAILGUI.jl")
