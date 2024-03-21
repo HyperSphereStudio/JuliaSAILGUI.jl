@@ -25,6 +25,7 @@ ShaderAbstractions = "65257c39-d410-5151-9873-9b3e5be5013e"
 libmousetrap_jll = "287f9a42-973b-50d0-ae32-9952e735a47d"
 mousetrap_jll = "0e90efc8-2bbd-550f-bf3c-306a2edaaeef"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+Glib_jll = "7746bdde-850d-59dc-9ae8-88ece973131d"
 
 [compat]
 GLMakie = "0.8.11"
