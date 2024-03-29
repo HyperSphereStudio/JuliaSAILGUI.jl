@@ -1,7 +1,7 @@
 using Mousetrap
 using MacroTools
 
-export @SetMousetrapProperties, g_timeout_add, g_idle_add, display_error
+export @SetMousetrapProperties
 
 include("Observables.jl")
 include("theme_hypersphere.jl")
@@ -47,7 +47,8 @@ end
 display_error(e) = showerror(stdout, e, catch_backtrace())    
 
 function init_mousetrap()
-	@eval quote
+	eval(quote
+		export g_timeout_add, g_idle_add, display_error
 		using Glib_jll
 		
 		const julia_src_function = @cfunction($src_function, Cint, (Cint, ))
@@ -60,5 +61,5 @@ function init_mousetrap()
 		function g_idle_add(f::Function; on_error_function::Function = display_error)
 			ccall((:g_idle_add_full, libglib), Cint, (Cint, Ptr{Cvoid}, Cint, Ptr{Cvoid}), Int32(0), julia_src_function, julia_create_ref(f, on_error_function), julia_destroy_create_ref_c)
 		end
-	end
+	end)
 end
