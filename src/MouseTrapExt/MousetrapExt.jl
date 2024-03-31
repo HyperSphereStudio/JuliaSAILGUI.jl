@@ -63,3 +63,7 @@ function init_mousetrap()
 		end
 	end)
 end
+
+function Base.setindex!(grid::Grid, child, i, j)
+    insert_at!(grid, child, first(i)-1, first(j)-1, length(i), length(j))
+end

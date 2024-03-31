@@ -3,7 +3,7 @@ module JuliaSAILGUI
 	@reexport using GLMakie, Observables, LibSerialPort, HTTP, FileIO, GeometryBasics
 	using GLMakie, Observables, LibSerialPort, FileIO, PrecompileTools, DataFrames
 	
-	export dict
+	export dict, Expando
 
     include("MouseTrapExt/MousetrapExt.jl")
     include("MicroControllerPort.jl")

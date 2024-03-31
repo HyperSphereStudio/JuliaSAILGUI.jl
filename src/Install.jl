@@ -17,6 +17,7 @@ if read(stdin, Char) == "Y"
 	Pkg.add(url="https://github.com/clemapfel/mousetrap_jll")
 	Pkg.add(url="https://github.com/clemapfel/MousetrapMakie.jl")
 
+	Pkg.add("StaticArrays")
 	Pkg.add("Glib_jll")
 	Pkg.add("Observables")
 	Pkg.add("DataFrames")
