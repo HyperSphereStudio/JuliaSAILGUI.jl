@@ -29,7 +29,10 @@ end
 
 
 
-# Quick Patch to prevent crashing
+function init_mousetrap()
+	eval(quote
+	
+	# Quick Patch to prevent crashing
 using Mousetrap.detail
 
 function Mousetrap.connect_signal_render!(f, gla::GLArea)
@@ -37,4 +40,7 @@ function Mousetrap.connect_signal_render!(f, gla::GLArea)
     detail.connect_signal_render!(gla._internal, function(x)
         typed_f(gla, x[2])
     end)
+end
+
+	end)
 end

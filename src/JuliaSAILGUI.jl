@@ -31,6 +31,7 @@ module JuliaSAILGUI
 
     function __init__()
         init_ports()
+		init_mousetrap()
     end
 	
 	function test_port()
