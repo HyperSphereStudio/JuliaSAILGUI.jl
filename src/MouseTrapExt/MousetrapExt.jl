@@ -27,3 +27,14 @@ function Base.setindex!(grid::Grid, child, i, j)
     insert_at!(grid, child, first(i)-1, first(j)-1, length(i), length(j))
 end
 
+
+
+# Quick Patch to prevent crashing
+using Mousetrap.detail
+
+function Mousetrap.connect_signal_render!(f, gla::GLArea)
+    typed_f = TypedFunction(f, Bool, (GLArea, Ptr{Cvoid}))
+    detail.connect_signal_render!(gla._internal, function(x)
+        typed_f(gla, x[2])
+    end)
+end
